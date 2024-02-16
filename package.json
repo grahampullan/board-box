@@ -1,0 +1,31 @@
+{
+  "name": "board-box",
+  "version": "0.0.1",
+  "description": "Infinite canvas infrastructure for web apps",
+  "main": "rollup.config.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "rollup -c"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/grahampullan/board-box.git"
+  },
+  "author": "Graham Pullan",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/grahampullan/board-box/issues"
+  },
+  "homepage": "https://github.com/grahampullan/board-box#readme",
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^25.0.7",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-replace": "^5.0.5",
+    "rollup": "^4.10.0",
+    "rollup-plugin-postcss": "^4.0.2"
+  },
+  "dependencies": {
+    "d3-drag": "^3.0.0",
+    "d3-selection": "^3.0.0"
+  }
+}
