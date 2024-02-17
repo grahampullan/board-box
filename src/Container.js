@@ -3,6 +3,7 @@ import * as d3 from './d3-re-export.js';
 class Container {
     constructor(options) {
         this.className = options.className || "";
+        this.sharedState = {}
         this.boxes = [];
         this.containers = [];
         this.maxBox = 0;
@@ -10,7 +11,6 @@ class Container {
         this.id = options.id || "cont-0";
         this.parentId = options.parentId || "board-0";
         this.boardId = options.boardId || "board-0";
-        this.context = options.context;
         this.position = options.position || {x:0, y:0};
         this.width = options.width || 200;
         this.height = options.height || 300;
@@ -44,6 +44,16 @@ class Container {
         return id;
     }
 
+    get offset() {
+        const boardOffset = this.sharedStateAnscestors[this.boardId].offset;
+        const offset = {x:0, y:0};
+        if ( this.parentId == this.boardId ) {
+            offset.x = boardOffset.x;
+            offset.y = boardOffset.y;
+        }
+        return offset;
+    }
+
     addBox(box) {
         const id = this.getNewBoxId;
         box.id = id;
@@ -63,28 +73,39 @@ class Container {
         this.height = parentHeight * this.HeightPerCent/100;
     }
 
+    drag(event,d) {
+        this.position.x = event.x;
+        this.position.y = event.y;
+        d3.select(`#${this.id}`)
+            .style("left", `${this.position.x + this.offset.x}px`)
+            .style("top", `${this.position.y + this.offset.y}px`);
+    }
+
     make() {
-        const boardOffset = this.sharedStateAnscestors[this.boardId].offset;
+        const boundDrag = this.drag.bind(this);
         const parentDiv = d3.select(`#${this.parentId}`);
         const div = parentDiv.append("div")
             .attr("class", `board-container ${this.className}`)
             .attr("id", this.id)
             .style("width",`${this.width}px`)
             .style("height",`${this.height}px`)
-            .style("left", `${this.position.x + boardOffset.x}px`)
-            .style("top", `${this.position.y + boardOffset.y}px`)
-            .style("position","absolute");   
+            .style("left", `${this.position.x + this.offset.x}px`)
+            .style("top", `${this.position.y + this.offset.y}px`)
+            .style("position","absolute")
+            .style("overflow","hidden")
+            .call(d3.drag()
+                    .subject((e,d)=>({x: this.position.x, y: this.position.y }))
+                    .on("drag",boundDrag)); 
         this.update();
     }
 
     update() {
-        const boardOffset = this.sharedStateAnscestors[this.boardId].offset;
         const div = d3.select(`#${this.id}`);
         div
             .style("width",`${this.width}px`)
             .style("height",`${this.height}px`)
-            .style("left", `${this.position.x + boardOffset.x}px`)
-            .style("top", `${this.position.y + boardOffset.y}px`); 
+            .style("left", `${this.position.x + this.offset.x}px`)
+            .style("top", `${this.position.y + this.offset.y}px`); 
 
     }
 

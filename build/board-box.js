@@ -1291,6 +1291,7 @@ var boardBox = (function (exports) {
   class Container {
       constructor(options) {
           this.className = options.className || "";
+          this.sharedState = {};
           this.boxes = [];
           this.containers = [];
           this.maxBox = 0;
@@ -1298,7 +1299,6 @@ var boardBox = (function (exports) {
           this.id = options.id || "cont-0";
           this.parentId = options.parentId || "board-0";
           this.boardId = options.boardId || "board-0";
-          this.context = options.context;
           this.position = options.position || {x:0, y:0};
           this.width = options.width || 200;
           this.height = options.height || 300;
@@ -1332,6 +1332,16 @@ var boardBox = (function (exports) {
           return id;
       }
 
+      get offset() {
+          const boardOffset = this.sharedStateAnscestors[this.boardId].offset;
+          const offset = {x:0, y:0};
+          if ( this.parentId == this.boardId ) {
+              offset.x = boardOffset.x;
+              offset.y = boardOffset.y;
+          }
+          return offset;
+      }
+
       addBox(box) {
           const id = this.getNewBoxId;
           box.id = id;
@@ -1351,28 +1361,58 @@ var boardBox = (function (exports) {
           this.height = parentHeight * this.HeightPerCent/100;
       }
 
+      drag(event,d) {
+          /*const boardOffset = this.sharedStateAnscestors[this.boardId].offset;
+          const offset = {x:0, y:0};
+          if ( this.parentId == this.boardId ) {
+              offset.x = boardOffset.x;
+              offset.y = boardOffset.y;
+          }*/
+          this.position.x = event.x;
+          this.position.y = event.y;
+          select(`#${this.id}`)
+              .style("left", `${this.position.x + this.offset.x}px`)
+              .style("top", `${this.position.y + this.offset.y}px`);
+      }
+
       make() {
-          const boardOffset = this.sharedStateAnscestors[this.boardId].offset;
+          const boundDrag = this.drag.bind(this);
+          /*const boardOffset = this.sharedStateAnscestors[this.boardId].offset;
+          const offset = {x:0, y:0};
+          if ( this.parentId == this.boardId ) {
+              offset.x = boardOffset.x;
+              offset.y = boardOffset.y;
+          }*/
           const parentDiv = select(`#${this.parentId}`);
           parentDiv.append("div")
               .attr("class", `board-container ${this.className}`)
               .attr("id", this.id)
               .style("width",`${this.width}px`)
               .style("height",`${this.height}px`)
-              .style("left", `${this.position.x + boardOffset.x}px`)
-              .style("top", `${this.position.y + boardOffset.y}px`)
-              .style("position","absolute");   
+              .style("left", `${this.position.x + this.offset.x}px`)
+              .style("top", `${this.position.y + this.offset.y}px`)
+              .style("position","absolute")
+              .style("overflow","hidden")
+              .call(drag()
+                      .subject((e,d)=>({x: this.position.x, y: this.position.y }))
+                      .on("drag",boundDrag)); 
           this.update();
       }
 
       update() {
+          /*
           const boardOffset = this.sharedStateAnscestors[this.boardId].offset;
+          const offset = {x:0, y:0};
+          if ( this.parentId == this.boardId ) {
+              offset.x = boardOffset.x;
+              offset.y = boardOffset.y;
+          }*/
           const div = select(`#${this.id}`);
           div
               .style("width",`${this.width}px`)
               .style("height",`${this.height}px`)
-              .style("left", `${this.position.x + boardOffset.x}px`)
-              .style("top", `${this.position.y + boardOffset.y}px`); 
+              .style("left", `${this.position.x + this.offset.x}px`)
+              .style("top", `${this.position.y + this.offset.y}px`); 
 
       }
 
@@ -1455,7 +1495,7 @@ var boardBox = (function (exports) {
       }
 
       make() {
-          const boundBoardDragged = this.boardDragged.bind(this);
+          const boundDragged = this.dragged.bind(this);
           select(`#${this.targetId}`)
               .attr("class", `board ${this.className}`)
               .attr("id", this.id)
@@ -1464,7 +1504,7 @@ var boardBox = (function (exports) {
               .style("height",`${this.height}px`)
               .style("position","relative")
               .style("overflow","hidden")
-              .call(drag().on("drag", boundBoardDragged));
+              .call(drag().on("drag", boundDragged));
           this.update();
       }
 
@@ -1491,11 +1531,10 @@ var boardBox = (function (exports) {
           //boxes.each(boxUpdateForD3Each);
       }
 
-      boardDragged(event, d) {
+      dragged(event, d) {
           d.x = event.x;
           d.y = event.y;
           const boardDiv = select(`#${this.id}`);
-          //boardDiv.style("transform", `translate(${d.x}px,${d.y}px)` )
           boardDiv.style("background-position", `${d.x}px ${d.y}px` );
           const containers = boardDiv.selectAll(".board-container")
               .data(this.containers);

@@ -68,7 +68,7 @@ class Board {
     }
 
     make() {
-        const boundBoardDragged = this.boardDragged.bind(this);
+        const boundDragged = this.dragged.bind(this);
         d3.select(`#${this.targetId}`)
             .attr("class", `board ${this.className}`)
             .attr("id", this.id)
@@ -77,7 +77,7 @@ class Board {
             .style("height",`${this.height}px`)
             .style("position","relative")
             .style("overflow","hidden")
-            .call(d3.drag().on("drag", boundBoardDragged));
+            .call(d3.drag().on("drag", boundDragged));
         this.update();
     }
 
@@ -104,7 +104,7 @@ class Board {
         //boxes.each(boxUpdateForD3Each);
     }
 
-    boardDragged(event, d) {
+    dragged(event, d) {
         d.x = event.x;
         d.y = event.y;
         const boardDiv = d3.select(`#${this.id}`);
