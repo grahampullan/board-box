@@ -73,7 +73,7 @@ class Container {
         this.height = parentHeight * this.HeightPerCent/100;
     }
 
-    drag(event,d) {
+    drag(event) {
         this.position.x = event.x;
         this.position.y = event.y;
         d3.select(`#${this.id}`)
@@ -81,8 +81,77 @@ class Container {
             .style("top", `${this.position.y + this.offset.y}px`);
     }
 
+    leftDrag(event) {
+        this.position.x = event.x;
+        this.width -= event.dx;
+        d3.select(`#${this.id}`)
+            .style("left", `${this.position.x + this.offset.x}px`)
+            .style("width", `${this.width}px`);
+    }
+
+    rightDrag(event) {
+        this.width = event.x;
+        d3.select(`#${this.id}`)
+            .style("width", `${this.width}px`);
+    }
+
+    bottomDrag(event) {
+        this.height = event.y;
+        d3.select(`#${this.id}`)
+            .style("height", `${this.height}px`);
+    }
+
+    bottomLeftDrag(event) {
+        this.position.x = event.x;
+        this.width -= event.dx;
+        this.height = event.y;
+        d3.select(`#${this.id}`)
+            .style("left", `${this.position.x + this.offset.x}px`)
+            .style("width", `${this.width}px`)
+            .style("height", `${this.height}px`);
+    }
+
+    bottomRightDrag(event) {
+        this.width = event.x;
+        this.height = event.y;
+        d3.select(`#${this.id}`)
+            .style("width", `${this.width}px`)
+            .style("height", `${this.height}px`);
+    }
+
+    topLeftDrag(event) {
+        this.position.x = event.x;
+        this.position.y = event.y;
+        this.width -= event.dx;
+        this.height -= event.dy;
+        d3.select(`#${this.id}`)
+            .style("left", `${this.position.x + this.offset.x}px`)
+            .style("top", `${this.position.y + this.offset.y}px`)
+            .style("width", `${this.width}px`)
+            .style("height", `${this.height}px`);
+    }
+
+    topRightDrag(event) {
+        this.position.y = event.y;
+        this.width = event.x;
+        this.height -= event.dy;
+        d3.select(`#${this.id}`)
+            .style("top", `${this.position.y + this.offset.y}px`)
+            .style("width", `${this.width}px`)
+            .style("height", `${this.height}px`);
+    }
+
+
+
     make() {
         const boundDrag = this.drag.bind(this);
+        const boundLeftDrag = this.leftDrag.bind(this);
+        const boundRightDrag = this.rightDrag.bind(this);
+        const boundBottomDrag = this.bottomDrag.bind(this);
+        const boundBottomLeftDrag = this.bottomLeftDrag.bind(this);
+        const boundBottomRightDrag = this.bottomRightDrag.bind(this);
+        const boundTopLeftDrag = this.topLeftDrag.bind(this);
+        const boundTopRightDrag = this.topRightDrag.bind(this);
         const parentDiv = d3.select(`#${this.parentId}`);
         const div = parentDiv.append("div")
             .attr("class", `board-container ${this.className}`)
@@ -94,8 +163,92 @@ class Container {
             .style("position","absolute")
             .style("overflow","hidden")
             .call(d3.drag()
-                    .subject((e,d)=>({x: this.position.x, y: this.position.y }))
-                    .on("drag",boundDrag)); 
+                .subject((e)=>({x: this.position.x, y: this.position.y }))
+                .on("drag", boundDrag )); 
+
+        div.append("div")
+            .attr("class","board-container-left-drag")
+            .style("left","-5px")
+            .style("top","10px")
+            .style("width", "15px")
+            .style("height", "calc(100% - 20px)" )
+            .style("position","absolute")
+            .call(d3.drag()
+                .subject((e) => ({x: this.position.x, y: 0. }))
+                .container( () => { return d3.select(`#${this.id}`).node().parentNode } ) 
+                .on("drag", boundLeftDrag ));
+
+        div.append("div")
+            .attr("class","board-container-right-drag")
+            .style("right", "-5px")
+            .style("top","10px")
+            .style("width", "15px")
+            .style("height", "calc(100% - 20px)")
+            .style("position","absolute")
+            .call(d3.drag()
+                .subject((e) => ({x: this.width, y: 0. }))
+                .on("drag", boundRightDrag));
+
+        div.append("div")
+            .attr("class","board-container-bottom-drag")
+            .style("left", "10px")
+            .style("bottom","-5px")
+            .style("width", "calc(100% - 20px)")
+            .style("height", "15px")
+            .style("position","absolute")
+            .call(d3.drag()
+                .subject((e) => ({x: 0., y: this.height  }))
+                .on("drag", boundBottomDrag));
+
+        div.append("div")
+            .attr("class","board-container-bottom-left-drag")
+            .style("left", "-5px")
+            .style("bottom","-5px")
+            .style("width", "15px")
+            .style("height", "15px")
+            .style("position","absolute")
+            .call(d3.drag()
+                .subject((e) => ({x: this.position.x, y: this.height  }))
+                .container( () => { return d3.select(`#${this.id}`).node().parentNode } ) 
+                .on("drag", boundBottomLeftDrag));
+
+        div.append("div")
+            .attr("class","board-container-bottom-right-drag")
+            .style("right", "-5px")
+            .style("bottom","-5px")
+            .style("width", "15px")
+            .style("height", "15px")
+            .style("position","absolute")
+            .call(d3.drag()
+                .subject((e) => ({x: this.width, y: this.height  })) 
+                .on("drag", boundBottomRightDrag));
+
+        div.append("div")
+            .attr("class","board-container-top-left-drag")
+            .style("left", "-5px")
+            .style("top","-5px")
+            .style("width", "15px")
+            .style("height", "15px")
+            .style("position","absolute")
+            .call(d3.drag()
+                .subject((e) => ({x: this.position.x, y: this.position.y  }))
+                .container( () => { return d3.select(`#${this.id}`).node().parentNode } ) 
+                .on("drag", boundTopLeftDrag));
+
+        div.append("div")
+            .attr("class","board-container-top-right-drag")
+            .style("right", "-5px")
+            .style("top","-5px")
+            .style("width", "15px")
+            .style("height", "15px")
+            .style("position","absolute")
+            .call(d3.drag()
+                .subject((e) => ({x: this.width, y: this.position.y  }))
+                .container( () => { return d3.select(`#${this.id}`).node().parentNode } ) 
+                .on("drag", boundTopRightDrag));
+
+
+
         this.update();
     }
 

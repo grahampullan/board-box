@@ -86,7 +86,6 @@ class Board {
         //
         // update all containers
         //
-        console.log(this.getAllContainers);
         const containers = div.selectAll(".board-container")
             .data(this.getAllContainers, k => k.id);
         containers.enter().each(containerMakeForD3Each);
