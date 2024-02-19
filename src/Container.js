@@ -92,9 +92,14 @@ class Container {
             .style("top", `${this.position.y}px`); 
     }
 
+    raiseDiv() {
+        d3.select(`#${this.id}`).raise();
+    }
+
     drag(event) {
         this.position.x = event.x;
         this.position.y = event.y;
+        this.raiseDiv();
         this.setUntransformed();
         this.renderDivPosition();
     }
@@ -102,18 +107,21 @@ class Container {
     leftDrag(event) {
         this.position.x = event.x;
         this.width -= event.dx;
+        this.raiseDiv();
         this.setUntransformed();
         this.renderDivPosition();
     }
 
     rightDrag(event) {
         this.width = event.x;
+        this.raiseDiv();
         this.setUntransformed();
         this.renderDivPosition();
     }
 
     bottomDrag(event) {
         this.height = event.y;
+        this.raiseDiv();
         this.setUntransformed();
         this.renderDivPosition();
     }
@@ -122,6 +130,7 @@ class Container {
         this.position.x = event.x;
         this.width -= event.dx;
         this.height = event.y;
+        this.raiseDiv();
         this.setUntransformed();
         this.renderDivPosition();
     }
@@ -129,6 +138,7 @@ class Container {
     bottomRightDrag(event) {
         this.width = event.x;
         this.height = event.y;
+        this.raiseDiv();
         this.setUntransformed();
         this.renderDivPosition();
     }
@@ -138,6 +148,7 @@ class Container {
         this.position.y = event.y;
         this.width -= event.dx;
         this.height -= event.dy;
+        this.raiseDiv();
         this.setUntransformed();
         this.renderDivPosition();
     }
@@ -146,6 +157,7 @@ class Container {
         this.position.y = event.y;
         this.width = event.x;
         this.height -= event.dy;
+        this.raiseDiv();
         this.setUntransformed();
         this.renderDivPosition();
     }

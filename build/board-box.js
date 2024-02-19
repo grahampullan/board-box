@@ -3582,9 +3582,14 @@ var boardBox = (function (exports) {
               .style("top", `${this.position.y}px`); 
       }
 
+      raiseDiv() {
+          select(`#${this.id}`).raise();
+      }
+
       drag(event) {
           this.position.x = event.x;
           this.position.y = event.y;
+          this.raiseDiv();
           this.setUntransformed();
           this.renderDivPosition();
       }
@@ -3592,18 +3597,21 @@ var boardBox = (function (exports) {
       leftDrag(event) {
           this.position.x = event.x;
           this.width -= event.dx;
+          this.raiseDiv();
           this.setUntransformed();
           this.renderDivPosition();
       }
 
       rightDrag(event) {
           this.width = event.x;
+          this.raiseDiv();
           this.setUntransformed();
           this.renderDivPosition();
       }
 
       bottomDrag(event) {
           this.height = event.y;
+          this.raiseDiv();
           this.setUntransformed();
           this.renderDivPosition();
       }
@@ -3612,6 +3620,7 @@ var boardBox = (function (exports) {
           this.position.x = event.x;
           this.width -= event.dx;
           this.height = event.y;
+          this.raiseDiv();
           this.setUntransformed();
           this.renderDivPosition();
       }
@@ -3619,6 +3628,7 @@ var boardBox = (function (exports) {
       bottomRightDrag(event) {
           this.width = event.x;
           this.height = event.y;
+          this.raiseDiv();
           this.setUntransformed();
           this.renderDivPosition();
       }
@@ -3628,6 +3638,7 @@ var boardBox = (function (exports) {
           this.position.y = event.y;
           this.width -= event.dx;
           this.height -= event.dy;
+          this.raiseDiv();
           this.setUntransformed();
           this.renderDivPosition();
       }
@@ -3636,6 +3647,7 @@ var boardBox = (function (exports) {
           this.position.y = event.y;
           this.width = event.x;
           this.height -= event.dy;
+          this.raiseDiv();
           this.setUntransformed();
           this.renderDivPosition();
       }
