@@ -32,6 +32,7 @@ class Container {
         const id = this.getNewContainerId;
         container.id = id;
         container.parentId = this.id;
+        container.untransformed = {x:container.position.x, y:container.position.y, width:container.width, height:container.height};
         container.sharedStateAnscestors = {...this.sharedStateAnscestors};
         container.sharedStateAnscestors[this.id] = this.sharedState;
         this.containers.push(container);
@@ -44,7 +45,7 @@ class Container {
         return id;
     }
 
-    get offset() {
+    /*get offset() {
         const boardOffset = this.sharedStateAnscestors[this.boardId].offset;
         const offset = {x:0, y:0};
         if ( this.parentId == this.boardId ) {
@@ -52,7 +53,7 @@ class Container {
             offset.y = boardOffset.y;
         }
         return offset;
-    }
+    }*/
 
     addBox(box) {
         const id = this.getNewBoxId;
@@ -73,50 +74,63 @@ class Container {
         this.height = parentHeight * this.HeightPerCent/100;
     }
 
+    setUntransformed() {
+        const t = this.sharedStateAnscestors[this.boardId].transform;
+        const u = {};
+        u.width = this.width / t.k;
+        u.height = this.height / t.k;
+        u.x = (this.position.x - t.x ) /t.k;
+        u.y = (this.position.y - t.y ) /t.k;
+        this.untransformed = u;
+    }
+
+    renderDivPosition() {
+        d3.select(`#${this.id}`)
+            .style("width",`${this.width}px`)
+            .style("height",`${this.height}px`)
+            .style("left", `${this.position.x}px`)
+            .style("top", `${this.position.y}px`); 
+    }
+
     drag(event) {
         this.position.x = event.x;
         this.position.y = event.y;
-        d3.select(`#${this.id}`)
-            .style("left", `${this.position.x + this.offset.x}px`)
-            .style("top", `${this.position.y + this.offset.y}px`);
+        this.setUntransformed();
+        this.renderDivPosition();
     }
 
     leftDrag(event) {
         this.position.x = event.x;
         this.width -= event.dx;
-        d3.select(`#${this.id}`)
-            .style("left", `${this.position.x + this.offset.x}px`)
-            .style("width", `${this.width}px`);
+        this.setUntransformed();
+        this.renderDivPosition();
     }
 
     rightDrag(event) {
         this.width = event.x;
-        d3.select(`#${this.id}`)
-            .style("width", `${this.width}px`);
+        this.setUntransformed();
+        this.renderDivPosition();
     }
 
     bottomDrag(event) {
         this.height = event.y;
-        d3.select(`#${this.id}`)
-            .style("height", `${this.height}px`);
+        this.setUntransformed();
+        this.renderDivPosition();
     }
 
     bottomLeftDrag(event) {
         this.position.x = event.x;
         this.width -= event.dx;
         this.height = event.y;
-        d3.select(`#${this.id}`)
-            .style("left", `${this.position.x + this.offset.x}px`)
-            .style("width", `${this.width}px`)
-            .style("height", `${this.height}px`);
+        this.setUntransformed();
+        this.renderDivPosition();
     }
 
     bottomRightDrag(event) {
         this.width = event.x;
         this.height = event.y;
-        d3.select(`#${this.id}`)
-            .style("width", `${this.width}px`)
-            .style("height", `${this.height}px`);
+        this.setUntransformed();
+        this.renderDivPosition();
     }
 
     topLeftDrag(event) {
@@ -124,21 +138,16 @@ class Container {
         this.position.y = event.y;
         this.width -= event.dx;
         this.height -= event.dy;
-        d3.select(`#${this.id}`)
-            .style("left", `${this.position.x + this.offset.x}px`)
-            .style("top", `${this.position.y + this.offset.y}px`)
-            .style("width", `${this.width}px`)
-            .style("height", `${this.height}px`);
+        this.setUntransformed();
+        this.renderDivPosition();
     }
 
     topRightDrag(event) {
         this.position.y = event.y;
         this.width = event.x;
         this.height -= event.dy;
-        d3.select(`#${this.id}`)
-            .style("top", `${this.position.y + this.offset.y}px`)
-            .style("width", `${this.width}px`)
-            .style("height", `${this.height}px`);
+        this.setUntransformed();
+        this.renderDivPosition();
     }
 
 
@@ -158,8 +167,8 @@ class Container {
             .attr("id", this.id)
             .style("width",`${this.width}px`)
             .style("height",`${this.height}px`)
-            .style("left", `${this.position.x + this.offset.x}px`)
-            .style("top", `${this.position.y + this.offset.y}px`)
+            .style("left", `${this.position.x}px`)
+            .style("top", `${this.position.y}px`)
             .style("position","absolute")
             .style("overflow","hidden")
             .call(d3.drag()
@@ -247,19 +256,11 @@ class Container {
                 .container( () => { return d3.select(`#${this.id}`).node().parentNode } ) 
                 .on("drag", boundTopRightDrag));
 
-
-
         this.update();
     }
 
     update() {
-        const div = d3.select(`#${this.id}`);
-        div
-            .style("width",`${this.width}px`)
-            .style("height",`${this.height}px`)
-            .style("left", `${this.position.x + this.offset.x}px`)
-            .style("top", `${this.position.y + this.offset.y}px`); 
-
+        this.renderDivPosition();
     }
 
 }

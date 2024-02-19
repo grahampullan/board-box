@@ -24,6 +24,7 @@ class Board {
         this.sharedState = {};
         this.sharedStateAnscestors = {};
         this.sharedState.offset = {x:0, y:0};
+        this.sharedState.transform = {x:0, y:0, k:1};
         this.className = options.className || "";
         this.containers = options.containers || [];
         this.maxContainer = 0;
@@ -61,6 +62,7 @@ class Board {
     addContainer(container) {
         const id = this.getNewContainerId;
         container.id = id;
+        container.untransformed = {x:container.position.x, y:container.position.y, width:container.width, height:container.height};
         container.sharedStateAnscestors = {...this.sharedStateAnscestors};
         container.sharedStateAnscestors[this.id] = this.sharedState;
         this.containers.push(container);
@@ -68,16 +70,15 @@ class Board {
     }
 
     make() {
-        const boundDragged = this.dragged.bind(this);
+        const boundZoomed = this.zoomed.bind(this);
         d3.select(`#${this.targetId}`)
             .attr("class", `board ${this.className}`)
             .attr("id", this.id)
-            .datum(this.sharedState.offset)
             .style("width",`${this.width}px`)
             .style("height",`${this.height}px`)
             .style("position","relative")
             .style("overflow","hidden")
-            .call(d3.drag().on("drag", boundDragged));
+            .call(d3.zoom().on("zoom", boundZoomed));
         this.update();
     }
 
@@ -103,11 +104,19 @@ class Board {
         //boxes.each(boxUpdateForD3Each);
     }
 
-    dragged(event, d) {
-        d.x = event.x;
-        d.y = event.y;
+    zoomed(event, d) {
+        const t = event.transform;
+        this.sharedState.transform = {x:t.x, y:t.y, k:t.k};
+        this.containers.forEach( container => {
+            const u = container.untransformed;
+            container.position.x = t.k*u.x + t.x; 
+            container.position.y = t.k*u.y + t.y; 
+            container.width = u.width * t.k;
+            container.height = u.height * t.k;
+        });
         const boardDiv = d3.select(`#${this.id}`);
-        boardDiv.style("background-position", `${d.x}px ${d.y}px` )
+        //    .style("background-position", `${t.x}px ${t.y}px` )
+        //    .style("background-size", `${t.k*20}px ${t.k*20}px`);
         const containers = boardDiv.selectAll(".board-container")
             .data(this.containers);
         containers.each(containerUpdateForD3Each);
