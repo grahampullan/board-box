@@ -3490,14 +3490,12 @@ var boardBox = (function (exports) {
     return zoom;
   }
 
-  class Container {
+  class Box {
       constructor(options) {
           this.className = options.className || "";
           this.sharedState = {};
           this.boxes = [];
-          this.containers = [];
           this.maxBox = 0;
-          this.maxContainer = 0;
           this.id = options.id || "cont-0";
           this.parentId = options.parentId || "board-0";
           this.boardId = options.boardId || "board-0";
@@ -3508,20 +3506,20 @@ var boardBox = (function (exports) {
           this.widthPerCent = options.widthPerCent;
       }
 
-      get getNewContainerId() {
-          const id = `${this.id}-cont-${this.maxContainer}`;
-          this.maxContainer++;
+      get getNewBoxId() {
+          const id = `${this.id}-cont-${this.maxBox}`;
+          this.maxBox++;
           return id;
       }
 
-      addContainer(container) {
-          const id = this.getNewContainerId;
-          container.id = id;
-          container.parentId = this.id;
-          container.untransformed = {x:container.position.x, y:container.position.y, width:container.width, height:container.height};
-          container.sharedStateAnscestors = {...this.sharedStateAnscestors};
-          container.sharedStateAnscestors[this.id] = this.sharedState;
-          this.containers.push(container);
+      addBox(box) {
+          const id = this.getNewBoxId;
+          box.id = id;
+          box.parentId = this.id;
+          box.untransformed = {x:box.position.x, y:box.position.y, width:box.width, height:box.height};
+          box.sharedStateAnscestors = {...this.sharedStateAnscestors};
+          box.sharedStateAnscestors[this.id] = this.sharedState;
+          this.boxes.push(box);
           return id;
       }
 
@@ -3531,35 +3529,18 @@ var boardBox = (function (exports) {
           return id;
       }
 
-      get getAllContainers() {
-          const allContainers = [];
-          const search = (containers) => {
-              containers.forEach( container => {
-                  allContainers.push(container);
-                  if (container.containers.length !== 0) {
-                      search(container.containers);
+      get getAllBoxes() {
+          const allBoxes = [];
+          const search = (boxes) => {
+              boxes.forEach( box => {
+                  allBoxes.push(box);
+                  if (box.boxes.length !== 0) {
+                      search(box.boxess);
                   }
               });
           };       
-          search(this.containers);
-          return allContainers;
-      }
-
-      /*get offset() {
-          const boardOffset = this.sharedStateAnscestors[this.boardId].offset;
-          const offset = {x:0, y:0};
-          if ( this.parentId == this.boardId ) {
-              offset.x = boardOffset.x;
-              offset.y = boardOffset.y;
-          }
-          return offset;
-      }*/
-
-      addBox(box) {
-          const id = this.getNewBoxId;
-          box.id = id;
-          this.boxes.push(box);
-          return id;
+          search(this.boxes);
+          return allBoxes;
       }
 
       setSizeFromPerCent() {
@@ -3682,7 +3663,7 @@ var boardBox = (function (exports) {
           this.setSizeFromPerCent();
           const div = parentDiv.append("div")
               .datum({"id":this.id})
-              .attr("class", `board-container ${this.className}`)
+              .attr("class", `board-box ${this.className}`)
               .attr("id", this.id)
               .style("width",`${this.width}px`)
               .style("height",`${this.height}px`)
@@ -3695,7 +3676,7 @@ var boardBox = (function (exports) {
                   .on("drag", boundDrag )); 
 
           div.append("div")
-              .attr("class","board-container-left-drag")
+              .attr("class","board-box-left-drag")
               .style("left","-5px")
               .style("top","10px")
               .style("width", "15px")
@@ -3707,7 +3688,7 @@ var boardBox = (function (exports) {
                   .on("drag", boundLeftDrag ));
 
           div.append("div")
-              .attr("class","board-container-right-drag")
+              .attr("class","board-box-right-drag")
               .style("right", "-5px")
               .style("top","10px")
               .style("width", "15px")
@@ -3718,7 +3699,7 @@ var boardBox = (function (exports) {
                   .on("drag", boundRightDrag));
 
           div.append("div")
-              .attr("class","board-container-bottom-drag")
+              .attr("class","board-box-bottom-drag")
               .style("left", "10px")
               .style("bottom","-5px")
               .style("width", "calc(100% - 20px)")
@@ -3729,7 +3710,7 @@ var boardBox = (function (exports) {
                   .on("drag", boundBottomDrag));
 
           div.append("div")
-              .attr("class","board-container-bottom-left-drag")
+              .attr("class","board-box-bottom-left-drag")
               .style("left", "-5px")
               .style("bottom","-5px")
               .style("width", "15px")
@@ -3741,7 +3722,7 @@ var boardBox = (function (exports) {
                   .on("drag", boundBottomLeftDrag));
 
           div.append("div")
-              .attr("class","board-container-bottom-right-drag")
+              .attr("class","board-box-bottom-right-drag")
               .style("right", "-5px")
               .style("bottom","-5px")
               .style("width", "15px")
@@ -3752,7 +3733,7 @@ var boardBox = (function (exports) {
                   .on("drag", boundBottomRightDrag));
 
           div.append("div")
-              .attr("class","board-container-top-left-drag")
+              .attr("class","board-box-top-left-drag")
               .style("left", "-5px")
               .style("top","-5px")
               .style("width", "15px")
@@ -3764,7 +3745,7 @@ var boardBox = (function (exports) {
                   .on("drag", boundTopLeftDrag));
 
           div.append("div")
-              .attr("class","board-container-top-right-drag")
+              .attr("class","board-box-top-right-drag")
               .style("right", "-5px")
               .style("top","-5px")
               .style("width", "15px")
@@ -3785,39 +3766,24 @@ var boardBox = (function (exports) {
 
       updateDescendants() {
           const div = select(`#${this.id}`);
-          const containers = div.selectChildren(".board-container")
-              .data(this.getAllContainers, k => k.id);
-          containers.each(containerUpdateForD3Each);
+          const boxes = div.selectChildren(".board-box")
+              .data(this.getAllBoxes, k => k.id);
+          boxes.each(boxUpdateForD3Each);
       }
 
   }
 
-  const containerMakeForD3Each = function( d, i ) {
+  const boxMakeForD3Each = function( d, i ) {
 
       d.make();
 
   };
 
-  const containerUpdateForD3Each = function( d, i ) {
+  const boxUpdateForD3Each = function( d, i ) {
 
       d.update();
 
   };
-
-  /*
-  Board
-  .targetId  = the id of the div that will be the Board
-  .className = option to give the Board a defined class name
-  .containers = an Array of ALL Containers on the Board, each element is a Container
-  .offset = for panning the Board
-  .width, .height = of Board in px
-  .widthPerCent, .heightPerCent = of Board as fraction of parent div
-
-  .sharedState - state of this Board, will be shared with descdendents
-  .sharedStateAnscestors - states of anscestors
-
-  */
-
 
   class Board {
       constructor(options) {
@@ -3827,8 +3793,8 @@ var boardBox = (function (exports) {
           this.sharedState.offset = {x:0, y:0};
           this.sharedState.transform = {x:0, y:0, k:1};
           this.className = options.className || "";
-          this.containers = options.containers || [];
-          this.maxContainer = 0;
+          this.boxes = options.boxes || [];
+          this.maxBox = 0;
           this.width = options.width || 200;
           this.height = options.height || 300;
           if ( options.widthPerCent !== undefined ) {
@@ -3839,34 +3805,34 @@ var boardBox = (function (exports) {
           }
       }
 
-      get getAllContainers() {
-          const allContainers = [];
-          const search = (containers) => {
-              containers.forEach( container => {
-                  allContainers.push(container);
-                  if (container.containers.length !== 0) {
-                      search(container.containers);
+      get getAllBoxes() {
+          const allBoxes = [];
+          const search = (boxes) => {
+              boxes.forEach( box => {
+                  allBoxes.push(box);
+                  if (box.boxes.length !== 0) {
+                      search(box.boxes);
                   }
               });
           };       
-          search(this.containers);
-          return allContainers;
+          search(this.boxes);
+          return allBoxes;
       }
       
 
-      get getNewContainerId() {
-          const id = `${this.id}-cont-${this.maxContainer}`;
-          this.maxContainer++;
+      get getNewBoxId() {
+          const id = `${this.id}-cont-${this.maxBox}`;
+          this.maxBox++;
           return id;
       }
 
-      addContainer(container) {
-          const id = this.getNewContainerId;
-          container.id = id;
-          container.untransformed = {x:container.position.x, y:container.position.y, width:container.width, height:container.height};
-          container.sharedStateAnscestors = {...this.sharedStateAnscestors};
-          container.sharedStateAnscestors[this.id] = this.sharedState;
-          this.containers.push(container);
+      addBox(box) {
+          const id = this.getNewBoxId;
+          box.id = id;
+          box.untransformed = {x:box.position.x, y:box.position.y, width:box.width, height:box.height};
+          box.sharedStateAnscestors = {...this.sharedStateAnscestors};
+          box.sharedStateAnscestors[this.id] = this.sharedState;
+          this.boxes.push(box);
           return id;
       }
 
@@ -3885,42 +3851,29 @@ var boardBox = (function (exports) {
 
       update() {
           const div = select(`#${this.id}`);
-          //
-          // update all containers
-          //
-          const containers = div.selectAll(".board-container")
-              .data(this.getAllContainers, k => k.id);
-          containers.enter().each(containerMakeForD3Each);
-          containers.exit().remove();
-          containers.each(containerUpdateForD3Each);
-          //
-          // update all boxes
-          //
-          //const allContainers = div.selectAll(".board-container")
-          //    .data(this.containers);
-          //const boxes = allContainers.selectAll(".box")
-          //    .data(d => d.boxes.filter( box => box.type=="box") );
-          //boxes.enter().each(boxMakeForD3Each);
-          //boxes.exit().each(boxRemoveForD3Each);
-          //boxes.each(boxUpdateForD3Each);
+          const boxes = div.selectAll(".board-box")
+              .data(this.getAllBoxes, k => k.id);
+          boxes.enter().each(boxMakeForD3Each);
+          boxes.exit().remove();
+          boxes.each(boxUpdateForD3Each);
       }
 
       zoomed(event, d) {
           const t = event.transform;
           this.sharedState.transform = {x:t.x, y:t.y, k:t.k};
-          this.containers.forEach( container => {
-              const u = container.untransformed;
-              container.position.x = t.k*u.x + t.x; 
-              container.position.y = t.k*u.y + t.y; 
-              container.width = u.width * t.k;
-              container.height = u.height * t.k;
+          this.boxes.forEach( box => {
+              const u = box.untransformed;
+              box.position.x = t.k*u.x + t.x; 
+              box.position.y = t.k*u.y + t.y; 
+              box.width = u.width * t.k;
+              box.height = u.height * t.k;
           });
           const boardDiv = select(`#${this.id}`);
           //    .style("background-position", `${t.x}px ${t.y}px` )
           //    .style("background-size", `${t.k*20}px ${t.k*20}px`);
-          const containers = boardDiv.selectAll(".board-container")
-              .data(this.containers);
-          containers.each(containerUpdateForD3Each);
+          const boxes = boardDiv.selectAll(".board-box")
+              .data(this.getAllBoxes, k => k.id);
+          boxes.each(boxUpdateForD3Each);
       }
 
       setWidthFromPerCent() {
@@ -3965,7 +3918,7 @@ var boardBox = (function (exports) {
   }
 
   exports.Board = Board;
-  exports.Container = Container;
+  exports.Box = Box;
   exports.Context = Context;
 
   return exports;
