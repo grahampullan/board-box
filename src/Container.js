@@ -14,12 +14,8 @@ class Container {
         this.position = options.position || {x:0, y:0};
         this.width = options.width || 200;
         this.height = options.height || 300;
-        if ( options.widthPerCent !== undefined ) {
-            this.setWidthFromPerCent();
-        }
-        if ( options.heightPerCent !== undefined ) {
-            this.setHeightFromPerCent();
-        }
+        this.heightPerCent = options.heightPerCent;
+        this.widthPerCent = options.widthPerCent;
     }
 
     get getNewContainerId() {
@@ -45,6 +41,20 @@ class Container {
         return id;
     }
 
+    get getAllContainers() {
+        const allContainers = [];
+        const search = (containers) => {
+            containers.forEach( container => {
+                allContainers.push(container);
+                if (container.containers.length !== 0) {
+                    search(container.containers);
+                }
+            });
+        }       
+        search(this.containers);
+        return allContainers;
+    }
+
     /*get offset() {
         const boardOffset = this.sharedStateAnscestors[this.boardId].offset;
         const offset = {x:0, y:0};
@@ -62,16 +72,14 @@ class Container {
         return id;
     }
 
-    setWidthFromPerCent() {
-        const containerDiv = d3.select(`#${this.id}`);
-        const parentWidth = containerDiv.parentNode.node().offsetWidth;
-        this.width = parentWidth * this.widthPerCent/100;
-    }
-
-    setHeightFromPerCent() {
-        const containerDiv = d3.select(`#${this.id}`);
-        const parentHeight = containerDiv.parentNode.node().offsetHeight;
-        this.height = parentHeight * this.HeightPerCent/100;
+    setSizeFromPerCent() {
+        const parentNode = d3.select(`#${this.parentId}`).node();
+        if ( this.widthPerCent !== undefined ) {
+            this.width = this.widthPerCent/100 * parentNode.clientWidth;
+        }
+        if ( this.heightPerCent !== undefined ) {
+            this.height = this.heightPerCent/100 * parentNode.clientHeight;
+        }
     }
 
     setUntransformed() {
@@ -110,6 +118,7 @@ class Container {
         this.raiseDiv();
         this.setUntransformed();
         this.renderDivPosition();
+        this.updateDescendants();
     }
 
     rightDrag(event) {
@@ -117,6 +126,7 @@ class Container {
         this.raiseDiv();
         this.setUntransformed();
         this.renderDivPosition();
+        this.updateDescendants();
     }
 
     bottomDrag(event) {
@@ -124,6 +134,7 @@ class Container {
         this.raiseDiv();
         this.setUntransformed();
         this.renderDivPosition();
+        this.updateDescendants();
     }
 
     bottomLeftDrag(event) {
@@ -133,6 +144,7 @@ class Container {
         this.raiseDiv();
         this.setUntransformed();
         this.renderDivPosition();
+        this.updateDescendants();
     }
 
     bottomRightDrag(event) {
@@ -141,6 +153,7 @@ class Container {
         this.raiseDiv();
         this.setUntransformed();
         this.renderDivPosition();
+        this.updateDescendants();
     }
 
     topLeftDrag(event) {
@@ -151,6 +164,7 @@ class Container {
         this.raiseDiv();
         this.setUntransformed();
         this.renderDivPosition();
+        this.updateDescendants();
     }
 
     topRightDrag(event) {
@@ -160,6 +174,7 @@ class Container {
         this.raiseDiv();
         this.setUntransformed();
         this.renderDivPosition();
+        this.updateDescendants();
     }
 
 
@@ -174,7 +189,9 @@ class Container {
         const boundTopLeftDrag = this.topLeftDrag.bind(this);
         const boundTopRightDrag = this.topRightDrag.bind(this);
         const parentDiv = d3.select(`#${this.parentId}`);
+        this.setSizeFromPerCent();
         const div = parentDiv.append("div")
+            .datum({"id":this.id})
             .attr("class", `board-container ${this.className}`)
             .attr("id", this.id)
             .style("width",`${this.width}px`)
@@ -272,7 +289,15 @@ class Container {
     }
 
     update() {
+        this.setSizeFromPerCent();
         this.renderDivPosition();
+    }
+
+    updateDescendants() {
+        const div = d3.select(`#${this.id}`);
+        const containers = div.selectChildren(".board-container")
+            .data(this.getAllContainers, k => k.id);
+        containers.each(containerUpdateForD3Each);
     }
 
 }
