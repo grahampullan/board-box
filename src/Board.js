@@ -39,7 +39,7 @@ class Board {
     
 
     get getNewBoxId() {
-        const id = `${this.id}-cont-${this.maxBox}`;
+        const id = `${this.id}-box-${this.maxBox}`;
         this.maxBox++;
         return id;
     }
@@ -50,6 +50,10 @@ class Board {
         box.untransformed = {x:box.position.x, y:box.position.y, width:box.width, height:box.height};
         box.sharedStateAnscestors = {...this.sharedStateAnscestors};
         box.sharedStateAnscestors[this.id] = this.sharedState;
+        if (box.component !== undefined) {
+            box.component.sharedStateAnscestors = this.sharedStateAnscestors;
+            box.component.parentId = box.id;
+        }
         this.boxes.push(box);
         return id;
     }

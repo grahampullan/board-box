@@ -3517,10 +3517,6 @@ class Box {
         box.untransformed = {x:box.position.x, y:box.position.y, width:box.width, height:box.height};
         box.sharedStateAnscestors = {...this.sharedStateAnscestors};
         box.sharedStateAnscestors[this.id] = this.sharedState;
-        if (box.component !== undefined) {
-            box.component.sharedStateAnscestors = this.sharedStateAnscestors;
-            box.component.parentId = box.id;
-        }
         this.boxes.push(box);
         return id;
     }
@@ -3590,7 +3586,7 @@ class Box {
         this.width -= event.dx;
         this.raiseDiv();
         this.setUntransformed();
-        this.update();
+        this.renderDivPosition();
         this.updateDescendants();
     }
 
@@ -3598,7 +3594,7 @@ class Box {
         this.width = event.x;
         this.raiseDiv();
         this.setUntransformed();
-        this.update();
+        this.renderDivPosition();
         this.updateDescendants();
     }
 
@@ -3606,7 +3602,7 @@ class Box {
         this.height = event.y;
         this.raiseDiv();
         this.setUntransformed();
-        this.update();
+        this.renderDivPosition();
         this.updateDescendants();
     }
 
@@ -3616,7 +3612,7 @@ class Box {
         this.height = event.y;
         this.raiseDiv();
         this.setUntransformed();
-        this.update();
+        this.renderDivPosition();
         this.updateDescendants();
     }
 
@@ -3625,7 +3621,7 @@ class Box {
         this.height = event.y;
         this.raiseDiv();
         this.setUntransformed();
-        this.update();
+        this.renderDivPosition();
         this.updateDescendants();
     }
 
@@ -3636,7 +3632,7 @@ class Box {
         this.height -= event.dy;
         this.raiseDiv();
         this.setUntransformed();
-        this.update();
+        this.renderDivPosition();
         this.updateDescendants();
     }
 
@@ -3646,7 +3642,7 @@ class Box {
         this.height -= event.dy;
         this.raiseDiv();
         this.setUntransformed();
-        this.update();
+        this.renderDivPosition();
         this.updateDescendants();
     }
 
@@ -3829,7 +3825,7 @@ class Board {
     
 
     get getNewBoxId() {
-        const id = `${this.id}-box-${this.maxBox}`;
+        const id = `${this.id}-cont-${this.maxBox}`;
         this.maxBox++;
         return id;
     }
@@ -3840,10 +3836,6 @@ class Board {
         box.untransformed = {x:box.position.x, y:box.position.y, width:box.width, height:box.height};
         box.sharedStateAnscestors = {...this.sharedStateAnscestors};
         box.sharedStateAnscestors[this.id] = this.sharedState;
-        if (box.component !== undefined) {
-            box.component.sharedStateAnscestors = this.sharedStateAnscestors;
-            box.component.parentId = box.id;
-        }
         this.boxes.push(box);
         return id;
     }

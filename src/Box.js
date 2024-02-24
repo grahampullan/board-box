@@ -14,6 +14,7 @@ class Box {
         this.height = options.height || 300;
         this.heightPerCent = options.heightPerCent;
         this.widthPerCent = options.widthPerCent;
+        this.component = options.component;
     }
 
     get getNewBoxId() {
@@ -29,6 +30,10 @@ class Box {
         box.untransformed = {x:box.position.x, y:box.position.y, width:box.width, height:box.height};
         box.sharedStateAnscestors = {...this.sharedStateAnscestors};
         box.sharedStateAnscestors[this.id] = this.sharedState;
+        if (box.component !== undefined) {
+            box.component.sharedStateAnscestors = this.sharedStateAnscestors;
+            box.component.parentId = box.id;
+        }
         this.boxes.push(box);
         return id;
     }
@@ -98,7 +103,7 @@ class Box {
         this.width -= event.dx;
         this.raiseDiv();
         this.setUntransformed();
-        this.renderDivPosition();
+        this.update();
         this.updateDescendants();
     }
 
@@ -106,7 +111,7 @@ class Box {
         this.width = event.x;
         this.raiseDiv();
         this.setUntransformed();
-        this.renderDivPosition();
+        this.update();
         this.updateDescendants();
     }
 
@@ -114,7 +119,7 @@ class Box {
         this.height = event.y;
         this.raiseDiv();
         this.setUntransformed();
-        this.renderDivPosition();
+        this.update();
         this.updateDescendants();
     }
 
@@ -124,7 +129,7 @@ class Box {
         this.height = event.y;
         this.raiseDiv();
         this.setUntransformed();
-        this.renderDivPosition();
+        this.update();
         this.updateDescendants();
     }
 
@@ -133,7 +138,7 @@ class Box {
         this.height = event.y;
         this.raiseDiv();
         this.setUntransformed();
-        this.renderDivPosition();
+        this.update();
         this.updateDescendants();
     }
 
@@ -144,7 +149,7 @@ class Box {
         this.height -= event.dy;
         this.raiseDiv();
         this.setUntransformed();
-        this.renderDivPosition();
+        this.update();
         this.updateDescendants();
     }
 
@@ -154,7 +159,7 @@ class Box {
         this.height -= event.dy;
         this.raiseDiv();
         this.setUntransformed();
-        this.renderDivPosition();
+        this.update();
         this.updateDescendants();
     }
 
@@ -266,12 +271,18 @@ class Box {
                 .container( () => { return d3.select(`#${this.id}`).node().parentNode } ) 
                 .on("drag", boundTopRightDrag));
 
+        if (this.component !== undefined) {
+            this.component.make();
+        }
         this.update();
     }
 
     update() {
         this.setSizeFromPerCent();
         this.renderDivPosition();
+        if (this.component !== undefined) {
+            this.component.update();
+        }
     }
 
     updateDescendants() {

@@ -12,17 +12,65 @@
 
 <div id="target"></div>
 
+<!--
 <script src="../build/board-box.js"></script>
+<script src="../src/d3-re-export.js"></script>
+-->
 
-<script>
-    const ctx = new boardBox.Context();
-    const board = new boardBox.Board({width:800, height:600});
+
+<script type = "module" >
+    import * as bb from '../build/board-box.js'
+    import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
+
+
+    class Circle {
+
+        constructor() {
+            this.r = 20;
+            this.colour = "red";
+        }
+
+        make() {
+            const div = d3.select(`#${this.parentId}`);
+            const svg = div.append("svg");
+            const cx = this.width / 2;
+            const cy = this.height / 2;
+            svg.append("circle")
+                .attr("cx", cx)
+                .attr("cy", cy)
+                .attr("r",20)
+                .style("fill", "red");
+        }
+
+        update() {
+            const div = d3.select(`#${this.parentId}`);
+            const circle = div.select("circle");
+            const cx = this.width / 2;
+            const cy = this.height / 2;
+            circle.attr("cx", cx)
+                .attr("cy", cy)
+                .attr("r",20);
+        }
+
+        get width() {
+            return d3.select(`#${this.parentId}`).node().clientWidth;
+        }
+
+        get height() {
+            return d3.select(`#${this.parentId}`).node().clientHeight;
+        }
+
+    }
+
+    const ctx = new bb.Context();
+    const board = new bb.Board({width:800, height:600});
     ctx.addBoard(board);
-    const box0 = new boardBox.Box({});
+    const box0 = new bb.Box({});
     board.addBox(box0);
-    const box1 = new boardBox.Box({width:100, height:100, position:{x:500,y:100}});
+    const box1 = new bb.Box({width:100, height:100, position:{x:500,y:100}});
     board.addBox(box1);
-    const box2 = new boardBox.Box({widthPerCent:50, heightPerCent:50, position:{x:20,y:20}});
+    const circle = new Circle();
+    const box2 = new bb.Box({widthPerCent:50, height:50, position:{x:20,y:20}, component:circle});
     box1.addBox(box2);
     console.log(board);
     board.make();

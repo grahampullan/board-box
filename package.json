@@ -2,7 +2,9 @@
   "name": "board-box",
   "version": "0.0.1",
   "description": "Infinite canvas infrastructure for web apps",
-  "main": "rollup.config.js",
+  "main": "build/board-box.min.js",
+  "module": "build/board-box.js",
+  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "rollup -c"
@@ -21,6 +23,7 @@
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-replace": "^5.0.5",
+    "@rollup/plugin-terser": "^0.4.4",
     "rollup": "^4.10.0",
     "rollup-plugin-postcss": "^4.0.2"
   },
