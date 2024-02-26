@@ -14,7 +14,8 @@ class Context {
     addBoard(board) {
         const id = this.getNewBoardId;
         board.id = id;
-        board.sharedStateAnscestors.context = this.sharedState;
+        board.sharedStateByAncestorId.context = this.sharedState;
+        board.ancestorIds.push("context")
         this.boards.push(board);
         return id;
     }
