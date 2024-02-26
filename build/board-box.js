@@ -3515,10 +3515,14 @@ class Box {
         box.id = id;
         box.parentId = this.id;
         box.untransformed = {x:box.position.x, y:box.position.y, width:box.width, height:box.height};
-        box.sharedStateAnscestors = {...this.sharedStateAnscestors};
-        box.sharedStateAnscestors[this.id] = this.sharedState;
+        box.sharedStateByAncestorId = {...this.sharedStateByAncestorId};
+        box.sharedStateByAncestorId[this.id] = this.sharedState;
+        box.ancestorIds = [...this.ancestorIds];
+        box.ancestorIds.push(this.id);
         if (box.component !== undefined) {
-            box.component.sharedStateAnscestors = this.sharedStateAnscestors;
+            box.component.sharedState = this.sharedState;
+            box.component.sharedStateByAncestorId = this.sharedStateByAncestorId;
+            box.component.ancestorIds = this.ancestorIds;
             box.component.parentId = box.id;
         }
         this.boxes.push(box);
@@ -3556,7 +3560,7 @@ class Box {
     }
 
     setUntransformed() {
-        const t = this.sharedStateAnscestors[this.boardId].transform;
+        const t = this.sharedStateByAncestorId[this.boardId].transform;
         const u = {};
         u.width = this.width / t.k;
         u.height = this.height / t.k;
@@ -3797,7 +3801,8 @@ class Board {
     constructor(options) {
         if (!options) { options={}; }        this.targetId = options.targetId || "target";
         this.sharedState = {};
-        this.sharedStateAnscestors = {};
+        this.sharedStateByAncestorId = {};
+        this.ancestorIds = [];
         this.sharedState.offset = {x:0, y:0};
         this.sharedState.transform = {x:0, y:0, k:1};
         this.className = options.className || "";
@@ -3838,10 +3843,14 @@ class Board {
         const id = this.getNewBoxId;
         box.id = id;
         box.untransformed = {x:box.position.x, y:box.position.y, width:box.width, height:box.height};
-        box.sharedStateAnscestors = {...this.sharedStateAnscestors};
-        box.sharedStateAnscestors[this.id] = this.sharedState;
+        box.sharedStateByAncestorId = {...this.sharedStateByAncestorId};
+        box.sharedStateByAncestorId[this.id] = this.sharedState;
+        box.ancestorIds = [...this.ancestorIds];
+        box.ancestorIds.push(this.id);
         if (box.component !== undefined) {
-            box.component.sharedStateAnscestors = this.sharedStateAnscestors;
+            box.component.sharedState = this.sharedState;
+            box.component.sharedStateByAncestorId = this.sharedStateByAncestorId;
+            box.component.ancestorIds = this.ancestorIds;
             box.component.parentId = box.id;
         }
         this.boxes.push(box);
@@ -3918,7 +3927,8 @@ class Context {
     addBoard(board) {
         const id = this.getNewBoardId;
         board.id = id;
-        board.sharedStateAnscestors.context = this.sharedState;
+        board.sharedStateByAncestorId.context = this.sharedState;
+        board.ancestorIds.push("context");
         this.boards.push(board);
         return id;
     }

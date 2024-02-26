@@ -7,7 +7,8 @@ class Board {
         if (!options) { options={} };
         this.targetId = options.targetId || "target";
         this.sharedState = {};
-        this.sharedStateAnscestors = {};
+        this.sharedStateByAncestorId = {};
+        this.ancestorIds = [];
         this.sharedState.offset = {x:0, y:0};
         this.sharedState.transform = {x:0, y:0, k:1};
         this.className = options.className || "";
@@ -48,10 +49,14 @@ class Board {
         const id = this.getNewBoxId;
         box.id = id;
         box.untransformed = {x:box.position.x, y:box.position.y, width:box.width, height:box.height};
-        box.sharedStateAnscestors = {...this.sharedStateAnscestors};
-        box.sharedStateAnscestors[this.id] = this.sharedState;
+        box.sharedStateByAncestorId = {...this.sharedStateByAncestorId};
+        box.sharedStateByAncestorId[this.id] = this.sharedState;
+        box.ancestorIds = [...this.ancestorIds];
+        box.ancestorIds.push(this.id);
         if (box.component !== undefined) {
-            box.component.sharedStateAnscestors = this.sharedStateAnscestors;
+            box.component.sharedState = this.sharedState;
+            box.component.sharedStateByAncestorId = this.sharedStateByAncestorId;
+            box.component.ancestorIds = this.ancestorIds;
             box.component.parentId = box.id;
         }
         this.boxes.push(box);

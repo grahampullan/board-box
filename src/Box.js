@@ -28,10 +28,14 @@ class Box {
         box.id = id;
         box.parentId = this.id;
         box.untransformed = {x:box.position.x, y:box.position.y, width:box.width, height:box.height};
-        box.sharedStateAnscestors = {...this.sharedStateAnscestors};
-        box.sharedStateAnscestors[this.id] = this.sharedState;
+        box.sharedStateByAncestorId = {...this.sharedStateByAncestorId};
+        box.sharedStateByAncestorId[this.id] = this.sharedState;
+        box.ancestorIds = [...this.ancestorIds];
+        box.ancestorIds.push(this.id);
         if (box.component !== undefined) {
-            box.component.sharedStateAnscestors = this.sharedStateAnscestors;
+            box.component.sharedState = this.sharedState;
+            box.component.sharedStateByAncestorId = this.sharedStateByAncestorId;
+            box.component.ancestorIds = this.ancestorIds;
             box.component.parentId = box.id;
         }
         this.boxes.push(box);
@@ -69,7 +73,7 @@ class Box {
     }
 
     setUntransformed() {
-        const t = this.sharedStateAnscestors[this.boardId].transform;
+        const t = this.sharedStateByAncestorId[this.boardId].transform;
         const u = {};
         u.width = this.width / t.k;
         u.height = this.height / t.k;
