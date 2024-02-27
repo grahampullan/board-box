@@ -3501,6 +3501,13 @@ class Box {
         this.height = options.height || 300;
         this.heightPerCent = options.heightPerCent;
         this.widthPerCent = options.widthPerCent;
+        this.quantiseX = options.quantiseX || false;
+        this.quantiseY = options.quantiseY || false;
+        this.gridX = options.gridX;
+        this.gridWidth = options.gridWidth;
+        this.gridY = options.gridY;
+        this.gridHeight = options.gridHeight;
+        this.sharedState.gridXMax = options.gridXMax || 12;
         this.component = options.component;
     }
 
@@ -3549,13 +3556,41 @@ class Box {
         return allBoxes;
     }
 
-    setSizeFromPerCent() {
+    setSize() {
         const parentNode = select(`#${this.parentId}`).node();
+        const gridXMax = this.sharedStateByAncestorId[this.parentId].gridXMax;
+        this.dx = parentNode.clientWidth / gridXMax;
         if ( this.widthPerCent !== undefined ) {
             this.width = this.widthPerCent/100 * parentNode.clientWidth;
         }
         if ( this.heightPerCent !== undefined ) {
             this.height = this.heightPerCent/100 * parentNode.clientHeight;
+        }
+        if ( this.quantiseX ) {
+            this.position.x = this.gridX * this.dx;
+            this.width = this.gridWidth * this.dx;
+        }
+        if ( this.quantiseY ) {
+            this.position.y = this.gridY * this.dx;
+            this.height = this.gridHeight * this.dx;
+        }
+    }
+
+    setQuantise() {
+        const parentNode = select(`#${this.parentId}`).node();
+        const gridXMax = this.sharedStateByAncestorId[this.parentId].gridXMax;
+        this.dx = parentNode.clientWidth / gridXMax;
+        if ( this.quantiseX ) {
+            this.gridX = Math.round( this.position.x / this.dx);
+            this.position.x = this.gridX * this.dx;
+            this.gridWidth = Math.round( this.width / this.dx);
+            this.width = this.gridWidth * this.dx;
+        }
+        if ( this.quantiseY ) {
+            this.gridY = Math.round( this.position.y / this.dx);
+            this.position.y = this.gridY * this.dx;
+            this.gridHeight = Math.round( this.height / this.dx);
+            this.height = this.gridHeight * this.dx;
         }
     }
 
@@ -3584,6 +3619,7 @@ class Box {
     drag(event) {
         this.position.x = event.x;
         this.position.y = event.y;
+        this.setQuantise();
         this.raiseDiv();
         this.setUntransformed();
         this.renderDivPosition();
@@ -3591,7 +3627,9 @@ class Box {
 
     leftDrag(event) {
         this.position.x = event.x;
-        this.width -= event.dx;
+        let dx = this.position.x - this.position0.x;
+        this.width = this.width0 - dx;
+        this.setQuantise();
         this.raiseDiv();
         this.setUntransformed();
         this.update();
@@ -3600,6 +3638,7 @@ class Box {
 
     rightDrag(event) {
         this.width = event.x;
+        this.setQuantise();
         this.raiseDiv();
         this.setUntransformed();
         this.update();
@@ -3608,6 +3647,7 @@ class Box {
 
     bottomDrag(event) {
         this.height = event.y;
+        this.setQuantise();
         this.raiseDiv();
         this.setUntransformed();
         this.update();
@@ -3616,8 +3656,10 @@ class Box {
 
     bottomLeftDrag(event) {
         this.position.x = event.x;
-        this.width -= event.dx;
+        let dx = this.position.x - this.position0.x;
+        this.width = this.width0 - dx;
         this.height = event.y;
+        this.setQuantise();
         this.raiseDiv();
         this.setUntransformed();
         this.update();
@@ -3627,6 +3669,7 @@ class Box {
     bottomRightDrag(event) {
         this.width = event.x;
         this.height = event.y;
+        this.setQuantise();
         this.raiseDiv();
         this.setUntransformed();
         this.update();
@@ -3636,8 +3679,11 @@ class Box {
     topLeftDrag(event) {
         this.position.x = event.x;
         this.position.y = event.y;
-        this.width -= event.dx;
-        this.height -= event.dy;
+        let dx = this.position.x - this.position0.x;
+        this.width = this.width0 - dx;
+        let dy = this.position.y - this.position0.y;
+        this.height = this.height0 - dy;
+        this.setQuantise();
         this.raiseDiv();
         this.setUntransformed();
         this.update();
@@ -3647,11 +3693,19 @@ class Box {
     topRightDrag(event) {
         this.position.y = event.y;
         this.width = event.x;
-        this.height -= event.dy;
+        let dy = this.position.y - this.position0.y;
+        this.height = this.height0 - dy;
+        this.setQuantise();
         this.raiseDiv();
         this.setUntransformed();
         this.update();
         this.updateDescendants();
+    }
+
+    dragStart(event){
+        this.position0 = {...this.position};
+        this.width0 = this.width;
+        this.height0 = this.height;
     }
 
 
@@ -3665,8 +3719,9 @@ class Box {
         const boundBottomRightDrag = this.bottomRightDrag.bind(this);
         const boundTopLeftDrag = this.topLeftDrag.bind(this);
         const boundTopRightDrag = this.topRightDrag.bind(this);
+        const boundDragStart = this.dragStart.bind(this);
         const parentDiv = select(`#${this.parentId}`);
-        this.setSizeFromPerCent();
+        this.setSize();
         const div = parentDiv.append("div")
             .datum({"id":this.id})
             .attr("class", `board-box ${this.className}`)
@@ -3691,6 +3746,7 @@ class Box {
             .call(drag()
                 .subject((e) => ({x: this.position.x, y: 0. }))
                 .container( () => { return select(`#${this.id}`).node().parentNode } ) 
+                .on("start", boundDragStart )
                 .on("drag", boundLeftDrag ));
 
         div.append("div")
@@ -3725,6 +3781,7 @@ class Box {
             .call(drag()
                 .subject((e) => ({x: this.position.x, y: this.height  }))
                 .container( () => { return select(`#${this.id}`).node().parentNode } ) 
+                .on("start", boundDragStart )
                 .on("drag", boundBottomLeftDrag));
 
         div.append("div")
@@ -3747,7 +3804,8 @@ class Box {
             .style("position","absolute")
             .call(drag()
                 .subject((e) => ({x: this.position.x, y: this.position.y  }))
-                .container( () => { return select(`#${this.id}`).node().parentNode } ) 
+                .container( () => { return select(`#${this.id}`).node().parentNode } )
+                .on("start", boundDragStart ) 
                 .on("drag", boundTopLeftDrag));
 
         div.append("div")
@@ -3760,6 +3818,7 @@ class Box {
             .call(drag()
                 .subject((e) => ({x: this.width, y: this.position.y  }))
                 .container( () => { return select(`#${this.id}`).node().parentNode } ) 
+                .on("start", boundDragStart )
                 .on("drag", boundTopRightDrag));
 
         if (this.component !== undefined) {
@@ -3769,7 +3828,7 @@ class Box {
     }
 
     update() {
-        this.setSizeFromPerCent();
+        this.setSize();
         this.renderDivPosition();
         if (this.component !== undefined) {
             this.component.update();
@@ -3816,6 +3875,7 @@ class Board {
         if ( options.heightPerCent !== undefined ) {
             this.setHeightFromPerCent();
         }
+        this.sharedState.gridXMax = options.gridXMax || 12;
     }
 
     get getAllBoxes() {

@@ -22,6 +22,7 @@ class Board {
         if ( options.heightPerCent !== undefined ) {
             this.setHeightFromPerCent();
         }
+        this.sharedState.gridXMax = options.gridXMax || 12;
     }
 
     get getAllBoxes() {
