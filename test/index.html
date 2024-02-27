@@ -62,13 +62,16 @@
     const ctx = new bb.Context();
     const board = new bb.Board({width:800, height:600});
     ctx.addBoard(board);
-    const box0 = new bb.Box({quantiseX: true, quantiseY: true, gridX:0, gridY:0, gridWidth:4, gridHeight:4});
+    const box0 = new bb.Box({position:{x:0,y:0}, width:200, height:200});
     board.addBox(box0);
-    const box1 = new bb.Box({quantiseX: true, quantiseY: true, gridX:4, gridY:0, gridWidth:2, gridHeight:2});
+    const box1 = new bb.Box({position:{x:250,y:0}, width:200, height:200});
     board.addBox(box1);
     const circle = new Circle();
-    const box2 = new bb.Box({widthPerCent:50, height:50, position:{x:20,y:20}, component:circle});
+    const circle2 = new Circle();
+    const box2 = new bb.Box({quantiseX:true, quantiseY:true, gridX:0, gridY:0, gridWidth:4, gridHeight:4, component:circle, margin:2});
+    const box3 = new bb.Box({quantiseX:true, quantiseY:true, gridX:4, gridY:0, gridWidth:4, gridHeight:4, component:circle2, margin:2});
     box1.addBox(box2);
+    box1.addBox(box3);
     console.log(board);
     board.make();
 </script>
