@@ -3508,6 +3508,7 @@ class Box {
         this.gridY = options.gridY;
         this.gridHeight = options.gridHeight;
         this.sharedState.gridXMax = options.gridXMax || 12;
+        this.margin = options.margin || 0;
         this.component = options.component;
     }
 
@@ -3606,10 +3607,10 @@ class Box {
 
     renderDivPosition() {
         select(`#${this.id}`)
-            .style("width",`${this.width}px`)
-            .style("height",`${this.height}px`)
-            .style("left", `${this.position.x}px`)
-            .style("top", `${this.position.y}px`); 
+            .style("width",`${this.width - 2*this.margin}px`)
+            .style("height",`${this.height - 2*this.margin}px`)
+            .style("left", `${this.position.x + this.margin}px`)
+            .style("top", `${this.position.y + this.margin}px`); 
     }
 
     raiseDiv() {
@@ -3726,10 +3727,10 @@ class Box {
             .datum({"id":this.id})
             .attr("class", `board-box ${this.className}`)
             .attr("id", this.id)
-            .style("width",`${this.width}px`)
-            .style("height",`${this.height}px`)
-            .style("left", `${this.position.x}px`)
-            .style("top", `${this.position.y}px`)
+            .style("width",`${this.width - 2*this.margin}px`)
+            .style("height",`${this.height - 2*this.margin}px`)
+            .style("left", `${this.position.x + this.margin}px`)
+            .style("top", `${this.position.y + this.margin}px`)
             .style("position","absolute")
             .style("overflow","hidden")
             .call(drag()
