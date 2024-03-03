@@ -22,6 +22,7 @@ class Box {
         this.gridHeight = options.gridHeight;
         this.sharedState.gridXMax = options.gridXMax || 12;
         this.margin = options.margin || 0;
+        this.autoLayout = options.autoLayout;
         this.component = options.component;
     }
 
@@ -128,6 +129,91 @@ class Box {
 
     raiseDiv() {
         d3.select(`#${this.id}`).raise();
+    }
+
+    setAutoLayout() {
+        console.log("start setAutoLayout");
+        let containerWidth = this.width;
+        let containerHeigth = this.height;
+        const boxInsertOrder = this.boxes.map(d => d.id);
+        let iCol = 0;
+        let iSubRow = 0;
+        let insertPosition = {x:0, y:0};
+        let rowHeight = 0;
+        let rowHeightPrev;
+        let rowTop = 0;
+        let colWidth = 0;
+        boxInsertOrder.forEach( nextBoxId => {
+            console.log(nextBoxId);
+            let nextBox = this.boxes.find( d => d.id == nextBoxId );
+            let nextBoxWidth = nextBox.width;
+            let nextBoxHeight = nextBox.height;
+            let boxInserted = false;
+            let counter = 0
+            while ( !boxInserted && counter<10 ) {
+                console.log(counter);
+                if ( iSubRow == 0 && iCol == 0 ) {
+                    rowHeight = nextBoxHeight;
+                }
+                if ( iSubRow == 0) {
+                    rowHeightPrev = rowHeight;
+                    rowHeight = Math.max(rowHeight, nextBoxHeight);
+                }
+                let availableWidth = containerWidth - insertPosition.x;
+                let availableHeight = rowTop + rowHeight - insertPosition.y;
+                let widthFits = false;
+                let heightFits = false;
+                if ( nextBoxWidth <= availableWidth && iSubRow == 0 ) {
+                    widthFits = true;
+                }
+                if ( nextBoxWidth <= colWidth && iSubRow > 0 ) {
+                    widthFits = true;
+                }
+                if ( nextBoxHeight <= availableHeight ) {
+                    heightFits = true;
+                }
+                if ( iCol == 0 && iSubRow == 0) {
+                    widthFits = true;
+                }
+                if ( widthFits && heightFits ) { // insert box
+                    console.log("inserted");
+                    nextBox.position.x = insertPosition.x;
+                    nextBox.position.y = insertPosition.y; 
+                    insertPosition.y += nextBoxHeight;
+                    colWidth = Math.max(colWidth, nextBoxWidth);
+                    iSubRow++;
+                    boxInserted = true;
+                }
+                if ( !widthFits && iSubRow == 0) { // box is too wide, start next full row
+                    console.log("too wide, start new full row");
+                    if ( rowHeight == nextBoxHeight ) {
+                        rowHeight = rowHeightPrev;
+                    }
+                    insertPosition.x = 0;
+                    insertPosition.y = rowTop + rowHeight;
+                    rowTop += rowHeight;
+                    iCol = 0;
+                    iSubRow = 0;
+                }
+                if ( !widthFits && iSubRow > 0) { // box is too wide for this col, start next col
+                    console.log("too wide, start new col");
+                    insertPosition.x += colWidth;
+                    insertPosition.y = rowTop;
+                    iCol++;
+                    iSubRow = 0;
+                    colWidth = 0;
+                }
+                if ( !heightFits ) { // box is too high, start next col
+                    console.log("too high, start new col");
+                    insertPosition.x += colWidth;
+                    insertPosition.y = rowTop;
+                    iCol++;
+                    iSubRow = 0;
+                    colWidth = 0;
+                }
+                counter++;
+            }
+        });
     }
 
     drag(event) {
@@ -344,6 +430,9 @@ class Box {
     update() {
         this.setSize();
         this.renderDivPosition();
+        if (this.autoLayout) {
+            this.setAutoLayout();
+        }
         if (this.component !== undefined) {
             this.component.update();
         }

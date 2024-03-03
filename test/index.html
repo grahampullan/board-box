@@ -64,14 +64,18 @@
     ctx.addBoard(board);
     const box0 = new bb.Box({position:{x:0,y:0}, width:200, height:200});
     board.addBox(box0);
-    const box1 = new bb.Box({position:{x:250,y:0}, width:200, height:200});
+    const box1 = new bb.Box({position:{x:250,y:0}, width:200, height:300,autoLayout:true});
     board.addBox(box1);
     const circle = new Circle();
     const circle2 = new Circle();
-    const box2 = new bb.Box({quantiseX:true, quantiseY:true, gridX:0, gridY:0, gridWidth:4, gridHeight:4, component:circle, margin:2});
-    const box3 = new bb.Box({quantiseX:true, quantiseY:true, gridX:4, gridY:0, gridWidth:4, gridHeight:4, component:circle2, margin:2});
+    const box2 = new bb.Box({position:{x:10,y:15}, width:100, height:100, margin:4});
+    const box3 = new bb.Box({position:{x:100,y:25}, width:50, height:50, margin:4});
+    const box4 = new bb.Box({position:{x:100,y:25}, width:50, height:60, margin:4});
+    const box5 = new bb.Box({position:{x:10,y:15}, width:50, height:100, margin:4});
     box1.addBox(box2);
     box1.addBox(box3);
+    box1.addBox(box4);
+    box1.addBox(box5);
     console.log(board);
     board.make();
 </script>
