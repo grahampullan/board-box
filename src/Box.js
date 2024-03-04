@@ -24,9 +24,12 @@ class Box {
         this.sharedState.gridXMax = options.gridXMax || 12;
         this.margin = options.margin || 0;
         this.autoLayout = options.autoLayout || false;
+        this.boxInsertOrder = [];
         const requestAutoLayout = new Observable({flag:true, state:false});
         requestAutoLayout.subscribe(this.setAutoLayout.bind(this));
-        this.sharedState = {...this.sharedState, requestAutoLayout};
+        const checkInsertOrder = new Observable({state:{pt:{x:0,y:0},id:"box-0"}});
+        checkInsertOrder.subscribe(this.setInsertOrder.bind(this));
+        this.sharedState = {...this.sharedState, requestAutoLayout, checkInsertOrder};
         this.component = options.component;
     }
 
@@ -52,6 +55,7 @@ class Box {
             box.component.parentId = box.id;
         }
         this.boxes.push(box);
+        this.boxInsertOrder.push(box.id);
         return id;
     }
 
@@ -141,7 +145,6 @@ class Box {
         }
         let containerWidth = this.width;
         let containerHeigth = this.height;
-        const boxInsertOrder = this.boxes.map(d => d.id);
         let iCol = 0;
         let iSubRow = 0;
         let insertPosition = {x:0, y:0};
@@ -149,14 +152,14 @@ class Box {
         let rowHeightPrev;
         let rowTop = 0;
         let colWidth = 0;
-        boxInsertOrder.forEach( nextBoxId => {
+        this.boxInsertOrder.forEach( nextBoxId => {
             let nextBox = this.boxes.find( d => d.id == nextBoxId );
             let nextBoxWidth = nextBox.width;
             let nextBoxHeight = nextBox.height;
             let boxInserted = false;
             let counter = 0
-            while ( !boxInserted && counter<10 ) {
-                console.log(counter);
+            while ( !boxInserted && counter < 10 ) {
+                //console.log(counter);
                 if ( iSubRow == 0 && iCol == 0 ) {
                     rowHeight = nextBoxHeight;
                 }
@@ -223,7 +226,38 @@ class Box {
     }
 
     requestParentAutoLayout() {
-        this.sharedStateByAncestorId[this.parentId].requestAutoLayout.state = true;
+        const parentSharedState = this.sharedStateByAncestorId[this.parentId];
+        if ( parentSharedState.requestAutoLayout !== undefined) {
+            parentSharedState.requestAutoLayout.state = true;
+        }
+    }
+
+    setParentInsertOrder(data) {
+        this.sharedStateByAncestorId[this.parentId].checkInsertOrder.state = data;
+    }
+
+    setInsertOrder(data) {
+        const pt = data.pt;
+        const id = data.id;
+        let boxInsertOrder = this.boxInsertOrder;
+        let found = false;
+        let boxInsertOrderNew;
+        this.boxes.forEach( box => {
+            let xmin = box.position.x;
+            let xmax = box.position.x + box.width;
+            let ymin = box.position.y;
+            let ymax = box.position.y + box.height;
+            if ( pt.x >= xmin && pt.x <= xmax && pt.y >= ymin && pt.y <= ymax && id !== box.id ) {
+                found = true;
+                let insertPointId = box.id;
+                boxInsertOrderNew = boxInsertOrder.filter( boxId => boxId !== id);
+                let insertIndex = boxInsertOrderNew.indexOf(insertPointId);
+                boxInsertOrderNew.splice(insertIndex,0,id);
+            }
+        });
+        if ( found ) {
+            this.boxInsertOrder = boxInsertOrderNew;
+        }
     }
 
     drag(event) {
@@ -233,6 +267,11 @@ class Box {
         this.raiseDiv();
         this.setUntransformed();
         this.renderDivPosition();
+    }
+
+    dragEnd(event) {
+        this.setParentInsertOrder({pt:{x:event.x, y:event.y}, id:this.id});
+        this.requestParentAutoLayout();
     }
 
     leftDrag(event) {
@@ -329,6 +368,7 @@ class Box {
         const boundTopLeftDrag = this.topLeftDrag.bind(this);
         const boundTopRightDrag = this.topRightDrag.bind(this);
         const boundDragStart = this.dragStart.bind(this);
+        const boundDragEnd = this.dragEnd.bind(this);
         const boundRequestParentAutoLayout = this.requestParentAutoLayout.bind(this);
         const parentDiv = d3.select(`#${this.parentId}`);
         this.setSize();
@@ -344,7 +384,8 @@ class Box {
             .style("overflow","hidden")
             .call(d3.drag()
                 .subject((e)=>({x: this.position.x, y: this.position.y }))
-                .on("drag", boundDrag )); 
+                .on("drag", boundDrag )
+                .on("end", boundDragEnd )); 
 
         div.append("div")
             .attr("class","board-box-left-drag")

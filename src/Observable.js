@@ -7,19 +7,18 @@ class Observable{
         this.observers=[];
     }
 
-    set state(value){
+    set state(data){
 
-        this._state = value;
+        this._state = data;
         
         if( this.flag && this._state ) {
             this.observers.forEach( (observer) => {
-                console.log("calling observer");
                 observer();
             } );
             this._state = false;
         } else {
             this.observers.forEach( (observer) => {
-                observer();
+                observer(data);
             } );
         }
 
