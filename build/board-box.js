@@ -3762,7 +3762,10 @@ class Box {
     }
 
     setParentInsertOrder(data) {
-        this.sharedStateByAncestorId[this.parentId].checkInsertOrder.state = data;
+        const parentSharedState = this.sharedStateByAncestorId[this.parentId];
+        if ( parentSharedState.checkInsertOrder !== undefined) {
+            this.sharedStateByAncestorId[this.parentId].checkInsertOrder.state = data;
+        }
     }
 
     setInsertOrder(data) {
