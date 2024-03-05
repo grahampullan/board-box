@@ -401,7 +401,8 @@ class Box {
                 .subject((e) => ({x: this.position.x, y: 0. }))
                 .container( () => { return d3.select(`#${this.id}`).node().parentNode } ) 
                 .on("start", boundDragStart )
-                .on("drag", boundLeftDrag ));
+                .on("drag", boundLeftDrag )
+                .on("end", boundRequestParentAutoLayout));
 
         div.append("div")
             .attr("class","board-box-right-drag")
@@ -413,7 +414,8 @@ class Box {
             .call(d3.drag()
                 .subject((e) => ({x: this.width, y: 0. }))
                 .on("start", boundDragStart )
-                .on("drag", boundRightDrag));
+                .on("drag", boundRightDrag)
+                .on("end", boundRequestParentAutoLayout));
 
         div.append("div")
             .attr("class","board-box-bottom-drag")
@@ -425,7 +427,8 @@ class Box {
             .call(d3.drag()
                 .subject((e) => ({x: 0., y: this.height  }))
                 .on("start", boundDragStart )
-                .on("drag", boundBottomDrag));
+                .on("drag", boundBottomDrag)
+                .on("end", boundRequestParentAutoLayout));
 
         div.append("div")
             .attr("class","board-box-bottom-left-drag")
