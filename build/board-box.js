@@ -3487,6 +3487,49 @@ function zoom() {
   return zoom;
 }
 
+class Observable{
+
+    constructor(options){
+        if (!options) { options={}; }        this.flag = options.flag || false;
+        this._state = options.state;
+        this.observers=[];
+    }
+
+    set state(data){
+
+        this._state = data;
+        
+        if( this.flag && this._state ) {
+            this.observers.forEach( (observer) => {
+                observer();
+            } );
+            this._state = false;
+        } else {
+            this.observers.forEach( (observer) => {
+                observer(data);
+            } );
+        }
+
+    }  
+
+    get state(){
+        return this._state;
+    }
+
+    subscribe(observer) {
+
+        this.observers.push(observer);
+
+    }
+
+    unsubscribe(observer) {
+
+        this.observers = this.observers.filter(item => item !== observer);
+
+    }
+
+}
+
 class Box {
     constructor(options) {
         this.className = options.className || "";
@@ -3509,6 +3552,13 @@ class Box {
         this.gridHeight = options.gridHeight;
         this.sharedState.gridXMax = options.gridXMax || 12;
         this.margin = options.margin || 0;
+        this.autoLayout = options.autoLayout || false;
+        this.boxInsertOrder = [];
+        const requestAutoLayout = new Observable({flag:true, state:false});
+        requestAutoLayout.subscribe(this.setAutoLayout.bind(this));
+        const checkInsertOrder = new Observable({state:{pt:{x:0,y:0},id:"box-0"}});
+        checkInsertOrder.subscribe(this.setInsertOrder.bind(this));
+        this.sharedState = {...this.sharedState, requestAutoLayout, checkInsertOrder};
         this.component = options.component;
     }
 
@@ -3534,6 +3584,7 @@ class Box {
             box.component.parentId = box.id;
         }
         this.boxes.push(box);
+        this.boxInsertOrder.push(box.id);
         return id;
     }
 
@@ -3617,6 +3668,130 @@ class Box {
         select(`#${this.id}`).raise();
     }
 
+    setAutoLayout() {
+        if ( !this.autoLayout ) {
+            return;
+        }
+        let containerWidth = this.width;
+        this.height;
+        let iCol = 0;
+        let iSubRow = 0;
+        let insertPosition = {x:0, y:0};
+        let rowHeight = 0;
+        let rowHeightPrev;
+        let rowTop = 0;
+        let colWidth = 0;
+        this.boxInsertOrder.forEach( nextBoxId => {
+            let nextBox = this.boxes.find( d => d.id == nextBoxId );
+            let nextBoxWidth = nextBox.width;
+            let nextBoxHeight = nextBox.height;
+            let boxInserted = false;
+            let counter = 0;
+            while ( !boxInserted && counter < 10 ) {
+                //console.log(counter);
+                if ( iSubRow == 0 && iCol == 0 ) {
+                    rowHeight = nextBoxHeight;
+                }
+                if ( iSubRow == 0) {
+                    rowHeightPrev = rowHeight;
+                    rowHeight = Math.max(rowHeight, nextBoxHeight);
+                }
+                let availableWidth = containerWidth - insertPosition.x;
+                let availableHeight = rowTop + rowHeight - insertPosition.y;
+                let widthFits = false;
+                let heightFits = false;
+                if ( nextBoxWidth <= availableWidth && iSubRow == 0 ) {
+                    widthFits = true;
+                }
+                if ( nextBoxWidth <= colWidth && iSubRow > 0 ) {
+                    widthFits = true;
+                }
+                if ( nextBoxHeight <= availableHeight ) {
+                    heightFits = true;
+                }
+                if ( iCol == 0 && iSubRow == 0) {
+                    widthFits = true;
+                }
+                if ( widthFits && heightFits ) { // insert box
+                    //console.log("inserted");
+                    nextBox.position.x = insertPosition.x;
+                    nextBox.position.y = insertPosition.y; 
+                    insertPosition.y += nextBoxHeight;
+                    colWidth = Math.max(colWidth, nextBoxWidth);
+                    iSubRow++;
+                    boxInserted = true;
+                }
+                if ( !widthFits && iSubRow == 0) { // box is too wide, start next full row
+                    //console.log("too wide, start new full row");
+                    if ( rowHeight == nextBoxHeight ) {
+                        rowHeight = rowHeightPrev;
+                    }
+                    insertPosition.x = 0;
+                    insertPosition.y = rowTop + rowHeight;
+                    rowTop += rowHeight;
+                    iCol = 0;
+                    iSubRow = 0;
+                }
+                if ( !widthFits && iSubRow > 0) { // box is too wide for this col, start next col
+                    //console.log("too wide, start new col");
+                    insertPosition.x += colWidth;
+                    insertPosition.y = rowTop;
+                    iCol++;
+                    iSubRow = 0;
+                    colWidth = 0;
+                }
+                if ( !heightFits ) { // box is too high, start next col
+                    //console.log("too high, start new col");
+                    insertPosition.x += colWidth;
+                    insertPosition.y = rowTop;
+                    iCol++;
+                    iSubRow = 0;
+                    colWidth = 0;
+                }
+                counter++;
+            }
+        });
+        this.updateDescendants();
+    }
+
+    requestParentAutoLayout() {
+        const parentSharedState = this.sharedStateByAncestorId[this.parentId];
+        if ( parentSharedState.requestAutoLayout !== undefined) {
+            parentSharedState.requestAutoLayout.state = true;
+        }
+    }
+
+    setParentInsertOrder(data) {
+        const parentSharedState = this.sharedStateByAncestorId[this.parentId];
+        if ( parentSharedState.checkInsertOrder !== undefined) {
+            this.sharedStateByAncestorId[this.parentId].checkInsertOrder.state = data;
+        }
+    }
+
+    setInsertOrder(data) {
+        const pt = data.pt;
+        const id = data.id;
+        let boxInsertOrder = this.boxInsertOrder;
+        let found = false;
+        let boxInsertOrderNew;
+        this.boxes.forEach( box => {
+            let xmin = box.position.x;
+            let xmax = box.position.x + box.width;
+            let ymin = box.position.y;
+            let ymax = box.position.y + box.height;
+            if ( pt.x >= xmin && pt.x <= xmax && pt.y >= ymin && pt.y <= ymax && id !== box.id ) {
+                found = true;
+                let insertPointId = box.id;
+                boxInsertOrderNew = boxInsertOrder.filter( boxId => boxId !== id);
+                let insertIndex = boxInsertOrderNew.indexOf(insertPointId);
+                boxInsertOrderNew.splice(insertIndex,0,id);
+            }
+        });
+        if ( found ) {
+            this.boxInsertOrder = boxInsertOrderNew;
+        }
+    }
+
     drag(event) {
         this.position.x = event.x;
         this.position.y = event.y;
@@ -3624,6 +3799,11 @@ class Box {
         this.raiseDiv();
         this.setUntransformed();
         this.renderDivPosition();
+    }
+
+    dragEnd(event) {
+        this.setParentInsertOrder({pt:{x:event.x, y:event.y}, id:this.id});
+        this.requestParentAutoLayout();
     }
 
     leftDrag(event) {
@@ -3701,6 +3881,7 @@ class Box {
         this.setUntransformed();
         this.update();
         this.updateDescendants();
+       // this.sharedStateByAncestorId[this.parentId].requestAutoLayout.state = true;
     }
 
     dragStart(event){
@@ -3708,8 +3889,6 @@ class Box {
         this.width0 = this.width;
         this.height0 = this.height;
     }
-
-
 
     make() {
         const boundDrag = this.drag.bind(this);
@@ -3721,6 +3900,8 @@ class Box {
         const boundTopLeftDrag = this.topLeftDrag.bind(this);
         const boundTopRightDrag = this.topRightDrag.bind(this);
         const boundDragStart = this.dragStart.bind(this);
+        const boundDragEnd = this.dragEnd.bind(this);
+        const boundRequestParentAutoLayout = this.requestParentAutoLayout.bind(this);
         const parentDiv = select(`#${this.parentId}`);
         this.setSize();
         const div = parentDiv.append("div")
@@ -3735,7 +3916,8 @@ class Box {
             .style("overflow","hidden")
             .call(drag()
                 .subject((e)=>({x: this.position.x, y: this.position.y }))
-                .on("drag", boundDrag )); 
+                .on("drag", boundDrag )
+                .on("end", boundDragEnd )); 
 
         div.append("div")
             .attr("class","board-box-left-drag")
@@ -3748,7 +3930,8 @@ class Box {
                 .subject((e) => ({x: this.position.x, y: 0. }))
                 .container( () => { return select(`#${this.id}`).node().parentNode } ) 
                 .on("start", boundDragStart )
-                .on("drag", boundLeftDrag ));
+                .on("drag", boundLeftDrag )
+                .on("end", boundRequestParentAutoLayout));
 
         div.append("div")
             .attr("class","board-box-right-drag")
@@ -3759,7 +3942,9 @@ class Box {
             .style("position","absolute")
             .call(drag()
                 .subject((e) => ({x: this.width, y: 0. }))
-                .on("drag", boundRightDrag));
+                .on("start", boundDragStart )
+                .on("drag", boundRightDrag)
+                .on("end", boundRequestParentAutoLayout));
 
         div.append("div")
             .attr("class","board-box-bottom-drag")
@@ -3770,7 +3955,9 @@ class Box {
             .style("position","absolute")
             .call(drag()
                 .subject((e) => ({x: 0., y: this.height  }))
-                .on("drag", boundBottomDrag));
+                .on("start", boundDragStart )
+                .on("drag", boundBottomDrag)
+                .on("end", boundRequestParentAutoLayout));
 
         div.append("div")
             .attr("class","board-box-bottom-left-drag")
@@ -3783,7 +3970,8 @@ class Box {
                 .subject((e) => ({x: this.position.x, y: this.height  }))
                 .container( () => { return select(`#${this.id}`).node().parentNode } ) 
                 .on("start", boundDragStart )
-                .on("drag", boundBottomLeftDrag));
+                .on("drag", boundBottomLeftDrag)
+                .on("end", boundRequestParentAutoLayout));
 
         div.append("div")
             .attr("class","board-box-bottom-right-drag")
@@ -3793,8 +3981,10 @@ class Box {
             .style("height", "15px")
             .style("position","absolute")
             .call(drag()
-                .subject((e) => ({x: this.width, y: this.height  })) 
-                .on("drag", boundBottomRightDrag));
+                .subject((e) => ({x: this.width, y: this.height  }))
+                .on("start", boundDragStart ) 
+                .on("drag", boundBottomRightDrag)
+                .on("end", boundRequestParentAutoLayout));
 
         div.append("div")
             .attr("class","board-box-top-left-drag")
@@ -3807,7 +3997,8 @@ class Box {
                 .subject((e) => ({x: this.position.x, y: this.position.y  }))
                 .container( () => { return select(`#${this.id}`).node().parentNode } )
                 .on("start", boundDragStart ) 
-                .on("drag", boundTopLeftDrag));
+                .on("drag", boundTopLeftDrag)
+                .on("end", boundRequestParentAutoLayout));
 
         div.append("div")
             .attr("class","board-box-top-right-drag")
@@ -3820,7 +4011,8 @@ class Box {
                 .subject((e) => ({x: this.width, y: this.position.y  }))
                 .container( () => { return select(`#${this.id}`).node().parentNode } ) 
                 .on("start", boundDragStart )
-                .on("drag", boundTopRightDrag));
+                .on("drag", boundTopRightDrag)
+                .on("end", boundRequestParentAutoLayout));
 
         if (this.component !== undefined) {
             this.component.make();
@@ -3831,6 +4023,9 @@ class Box {
     update() {
         this.setSize();
         this.renderDivPosition();
+        if (this.autoLayout) {
+            this.setAutoLayout();
+        }
         if (this.component !== undefined) {
             this.component.update();
         }
