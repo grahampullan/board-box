@@ -25,50 +25,27 @@
 
 
     vl.register(vega, vegaLite, {view: {renderer: "canvas"}});
-    
-    class Scatter {
 
-        constructor(dataId) {
-            this.dataId = dataId;
-            this.margin = {top: 10, right: 60, bottom: 60, left: 10};
-        }
+    class Scatter extends bb.Component {
 
-        get width() {
-            return d3.select(`#${this.parentId}`).node().clientWidth;
-        }   
-
-        get height() {
-            return d3.select(`#${this.parentId}`).node().clientHeight;
-        }
-
-        get plotWidth() {
-            return this.width - this.margin.left - this.margin.right;
-        }
-
-        get plotHeight() {
-            return this.height - this.margin.top - this.margin.bottom;
-        }
-
-        setPlotAreaSize() {
-            const plotArea = d3.select(`#${this.parentId}`).select(".plotArea");
-            plotArea.style("width", `${this.plotWidth}px`)
-                .style("height", `${this.plotHeight}px`);
+        constructor(options) {
+            super(options);
+            this.dataId = options.dataId;
         }
 
         make() {
             const div = d3.select(`#${this.parentId}`);
             div.append("div")
-                .attr("class", "plotArea")
-                .style("position", "absolute")
-                .style("top", `${this.margin.top}px`)
-                .style("left", `${this.margin.left}px`);
-            this.setPlotAreaSize();  
+                .attr("class", `${this.containerClassName}`)
+                .style("position", "absolute");
+            this.setContainerSize();  
             this.update();
         }
 
         update() {
-            const plotArea = d3.select(`#${this.parentId}`).select(".plotArea");
-            this.setPlotAreaSize();
+            const plotArea = d3.select(`#${this.parentId}`).select(`.${this.containerClassName}`);
+            plotArea.selectChildren().remove();
+            this.setContainerSize();
             const data = this.sharedStateByAncestorId['context'].data[this.dataId];
             vl.markPoint()
                 .data(data)
@@ -76,8 +53,8 @@
                     vl.x().fieldQ('x'),
                     vl.y().fieldQ('y')
                 ) 
-                .width(this.plotWidth)
-                .height(this.plotHeight)
+                .width(this.containerWidth)
+                .height(this.containerHeight)
                 .render()
                 .then(viewElement => {
                     plotArea.selectChildren().remove();
@@ -100,17 +77,15 @@
 
     const board = new bb.Board({width:800, height:600});
     ctx.addBoard(board);
+
     const box1 = new bb.Box({position:{x:250,y:0}, width:500, height:500,autoLayout:true});
     board.addBox(box1);
-    const scatter1 = new Scatter('random');
-    const scatter2 = new Scatter('random');
-    const scatter3 = new Scatter('random');
-    const box11 = new bb.Box({position:{x:10,y:15}, width:200, height:200, margin:4, component:scatter1});
-    const box12 = new bb.Box({position:{x:100,y:25}, width:200, height:200, margin:4, component:scatter2});
-    const box13 = new bb.Box({position:{x:100,y:25}, width:200, height:200, margin:4, component:scatter3});
-    box1.addBox(box11);
-    box1.addBox(box12);
-    box1.addBox(box13);
+
+    const margin = {top: 10, right: 50, bottom: 60, left: 20};
+    box1.addBox( new bb.Box({position:{x:10,y:15}, width:200, height:200, margin:4, component:new Scatter({dataId:'random', margin})  }));
+    box1.addBox( new bb.Box({position:{x:100,y:25}, width:200, height:200, margin:4, component:new Scatter({dataId:'random', margin})  }));
+    box1.addBox( new bb.Box({position:{x:10,y:250}, width:200, height:200, margin:4, component:new Scatter({dataId:'random', margin})  }));
+    
     console.log(board);
     board.make();
 
