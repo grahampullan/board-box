@@ -22,6 +22,7 @@ class Box {
         this.gridY = options.gridY;
         this.gridHeight = options.gridHeight;
         this.sharedState.gridXMax = options.gridXMax || 12;
+        this.allowChildrenResizeOnBoardZoom = options.allowResizeOnBoardZoom || true;
         this.margin = options.margin || 0;
         this.autoLayout = options.autoLayout || false;
         this.boxInsertOrder = [];

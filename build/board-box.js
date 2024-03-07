@@ -3551,6 +3551,7 @@ class Box {
         this.gridY = options.gridY;
         this.gridHeight = options.gridHeight;
         this.sharedState.gridXMax = options.gridXMax || 12;
+        this.allowChildrenResizeOnBoardZoom = options.allowResizeOnBoardZoom || true;
         this.margin = options.margin || 0;
         this.autoLayout = options.autoLayout || false;
         this.boxInsertOrder = [];
@@ -4144,7 +4145,17 @@ class Board {
             box.position.y = t.k*u.y + t.y; 
             box.width = u.width * t.k;
             box.height = u.height * t.k;
+            if (box.allowChildrenResizeOnBoardZoom) {
+                box.boxes.forEach( childBox => {
+                    const u = childBox.untransformed;
+                    childBox.position.x = t.k*u.x + t.x; 
+                    childBox.position.y = t.k*u.y + t.y; 
+                    childBox.width = u.width * t.k;
+                    childBox.height = u.height * t.k;
+                });
+            }
         });
+       
         const boardDiv = select(`#${this.id}`);
         //    .style("background-position", `${t.x}px ${t.y}px` )
         //    .style("background-size", `${t.k*20}px ${t.k*20}px`);
