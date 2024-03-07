@@ -100,8 +100,6 @@
 
     const board = new bb.Board({width:800, height:600});
     ctx.addBoard(board);
-    const box0 = new bb.Box({position:{x:0,y:0}, width:200, height:200});
-    board.addBox(box0);
     const box1 = new bb.Box({position:{x:250,y:0}, width:500, height:500,autoLayout:true});
     board.addBox(box1);
     const scatter1 = new Scatter('random');
