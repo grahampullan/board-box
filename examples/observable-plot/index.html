@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"> 
+    <link rel="stylesheet" href="observable-plot.css">
+</head>
+
+<body>
+
+<div id="target"></div>
+
+
+<script type = "module">
+
+    import * as bb from '../../build/board-box.js'
+    import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
+    import * as Plot from "https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6/+esm";
+
+    
+    class Scatter {
+
+        constructor(dataId) {
+            this.dataId = dataId;
+            this.margin = {top: 10, right: 10, bottom: 10, left: 10};
+        }
+
+        get width() {
+            return d3.select(`#${this.parentId}`).node().clientWidth;
+        }   
+
+        get height() {
+            return d3.select(`#${this.parentId}`).node().clientHeight;
+        }
+
+        get plotWidth() {
+            return this.width - this.margin.left - this.margin.right;
+        }
+
+        get plotHeight() {
+            return this.height - this.margin.top - this.margin.bottom;
+        }
+
+        setPlotAreaSize() {
+            const plotArea = d3.select(`#${this.parentId}`).select(".plotArea");
+            plotArea.style("width", `${this.plotWidth}px`)
+                .style("height", `${this.plotHeight}px`);
+        }
+
+        make() {
+            const div = d3.select(`#${this.parentId}`);
+            div.append("div")
+                .attr("class", "plotArea")
+                .style("position", "absolute")
+                .style("top", `${this.margin.top}px`)
+                .style("left", `${this.margin.left}px`);
+            this.setPlotAreaSize();  
+            this.update();
+        }
+
+        update() {
+            const plotArea = d3.select(`#${this.parentId}`).select(".plotArea");
+            plotArea.selectChildren().remove();
+            this.setPlotAreaSize();
+            const data = this.sharedStateByAncestorId['context'].data[this.dataId];
+            const plot = Plot.plot({
+                width: this.plotWidth,
+                height: this.plotHeight,
+                marks: [
+                    Plot.dot(data, {x: "x", y: "y"}),
+                    Plot.ruleX([0]),
+                    Plot.ruleY([0])
+                ]
+            });
+            plotArea.node().append(plot);
+
+        }
+    }
+    
+    function randomData() {
+        const data = [];
+        for (let i = 0; i < 100; i++) {
+            data.push({x: Math.random(), y: Math.random()});
+        }
+        return data;
+    }
+
+    const ctx = new bb.Context();
+    ctx.sharedState.data={};
+    ctx.sharedState.data['random'] = randomData();
+
+    const board = new bb.Board({width:800, height:600});
+    ctx.addBoard(board);
+    const box0 = new bb.Box({position:{x:0,y:0}, width:200, height:200});
+    board.addBox(box0);
+    const box1 = new bb.Box({position:{x:250,y:0}, width:500, height:500,autoLayout:true});
+    board.addBox(box1);
+    const scatter1 = new Scatter('random');
+    const scatter2 = new Scatter('random');
+    const scatter3 = new Scatter('random');
+    const box11 = new bb.Box({position:{x:10,y:15}, width:200, height:200, margin:4, component:scatter1});
+    const box12 = new bb.Box({position:{x:100,y:25}, width:200, height:200, margin:4, component:scatter2});
+    const box13 = new bb.Box({position:{x:100,y:25}, width:200, height:200, margin:4, component:scatter3});
+    box1.addBox(box11);
+    box1.addBox(box12);
+    box1.addBox(box13);
+    console.log(board);
+    board.make();
+
+</script>
+
+</body>
+</html>
+
+

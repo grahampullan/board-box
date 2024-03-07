@@ -1,0 +1,19 @@
+.board {
+    background-color: #d5d5de;
+    opacity: 0.8;
+    color: black;
+    border-width: 1px;
+    border-style: solid;
+    border-radius: 5px;
+}
+
+.board-box {
+    background: rgb(255, 255, 255);
+    color: rgb(14, 14, 14);
+    border-width: 1px;
+    border-style: solid;
+    border-radius: 10px;
+    box-shadow: -5px -5px 9px rgba(255,255,255,0.35), 5px 5px 9px rgba(94,104,121,0.3);
+
+}
+
