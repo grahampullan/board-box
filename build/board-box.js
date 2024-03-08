@@ -3551,7 +3551,7 @@ class Box {
         this.gridY = options.gridY;
         this.gridHeight = options.gridHeight;
         this.sharedState.gridXMax = options.gridXMax || 12;
-        this.allowChildrenResizeOnBoardZoom = options.allowResizeOnBoardZoom || true;
+        this.allowChildrenResizeOnBoardZoom = options.allowChildrenResizeOnBoardZoom || true;
         this.margin = options.margin || 0;
         this.autoLayout = options.autoLayout || false;
         this.boxInsertOrder = [];
@@ -3689,9 +3689,9 @@ class Box {
             let boxInserted = false;
             let counter = 0;
             while ( !boxInserted && counter < 10 ) {
-                //console.log(counter);
+                console.log(counter);
                 if ( iSubRow == 0 && iCol == 0 ) {
-                    rowHeight = nextBoxHeight;
+                    rowHeight = nextBoxHeight+1; // +1 to avoid rounding errors
                 }
                 if ( iSubRow == 0) {
                     rowHeightPrev = rowHeight;
@@ -3701,6 +3701,7 @@ class Box {
                 let availableHeight = rowTop + rowHeight - insertPosition.y;
                 let widthFits = false;
                 let heightFits = false;
+                //console.log({availableWidth, availableHeight, nextBoxWidth, nextBoxHeight, insertPosition,iCol, iSubRow, colWidth, rowHeight, rowTop, rowHeightPrev});
                 if ( nextBoxWidth <= availableWidth && iSubRow == 0 ) {
                     widthFits = true;
                 }
@@ -4147,11 +4148,11 @@ class Board {
             box.height = u.height * t.k;
             if (box.allowChildrenResizeOnBoardZoom) {
                 box.boxes.forEach( childBox => {
-                    const u = childBox.untransformed;
-                    childBox.position.x = t.k*u.x + t.x; 
-                    childBox.position.y = t.k*u.y + t.y; 
-                    childBox.width = u.width * t.k;
-                    childBox.height = u.height * t.k;
+                    const uc = childBox.untransformed;
+                    childBox.position.x = t.k*uc.x + t.x; 
+                    childBox.position.y = t.k*uc.y + t.y; 
+                    childBox.width = uc.width * t.k;
+                    childBox.height = uc.height * t.k;
                 });
             }
         });

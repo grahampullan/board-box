@@ -97,11 +97,11 @@ class Board {
             box.height = u.height * t.k;
             if (box.allowChildrenResizeOnBoardZoom) {
                 box.boxes.forEach( childBox => {
-                    const u = childBox.untransformed;
-                    childBox.position.x = t.k*u.x + t.x; 
-                    childBox.position.y = t.k*u.y + t.y; 
-                    childBox.width = u.width * t.k;
-                    childBox.height = u.height * t.k;
+                    const uc = childBox.untransformed;
+                    childBox.position.x = t.k*uc.x + t.x; 
+                    childBox.position.y = t.k*uc.y + t.y; 
+                    childBox.width = uc.width * t.k;
+                    childBox.height = uc.height * t.k;
                 });
             }
         });

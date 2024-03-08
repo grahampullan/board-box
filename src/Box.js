@@ -22,7 +22,7 @@ class Box {
         this.gridY = options.gridY;
         this.gridHeight = options.gridHeight;
         this.sharedState.gridXMax = options.gridXMax || 12;
-        this.allowChildrenResizeOnBoardZoom = options.allowResizeOnBoardZoom || true;
+        this.allowChildrenResizeOnBoardZoom = options.allowChildrenResizeOnBoardZoom || true;
         this.margin = options.margin || 0;
         this.autoLayout = options.autoLayout || false;
         this.boxInsertOrder = [];
@@ -160,9 +160,9 @@ class Box {
             let boxInserted = false;
             let counter = 0
             while ( !boxInserted && counter < 10 ) {
-                //console.log(counter);
+                console.log(counter);
                 if ( iSubRow == 0 && iCol == 0 ) {
-                    rowHeight = nextBoxHeight;
+                    rowHeight = nextBoxHeight+1; // +1 to avoid rounding errors
                 }
                 if ( iSubRow == 0) {
                     rowHeightPrev = rowHeight;
@@ -172,6 +172,7 @@ class Box {
                 let availableHeight = rowTop + rowHeight - insertPosition.y;
                 let widthFits = false;
                 let heightFits = false;
+                //console.log({availableWidth, availableHeight, nextBoxWidth, nextBoxHeight, insertPosition,iCol, iSubRow, colWidth, rowHeight, rowTop, rowHeightPrev});
                 if ( nextBoxWidth <= availableWidth && iSubRow == 0 ) {
                     widthFits = true;
                 }
