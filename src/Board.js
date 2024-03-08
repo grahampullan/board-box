@@ -16,12 +16,8 @@ class Board {
         this.maxBox = 0;
         this.width = options.width || 200;
         this.height = options.height || 300;
-        if ( options.widthPerCent !== undefined ) {
-            this.setWidthFromPerCent();
-        }
-        if ( options.heightPerCent !== undefined ) {
-            this.setHeightFromPerCent();
-        }
+        this.heightPerCent = options.heightPerCent;
+        this.widthPerCent = options.widthPerCent;
         this.sharedState.gridXMax = options.gridXMax || 12;
     }
 
@@ -46,6 +42,17 @@ class Board {
         return id;
     }
 
+    setSize() {
+        const div = d3.select(`#${this.id}`);
+        const parentNode = div.node().parentNode;
+        if ( this.widthPerCent !== undefined ) {
+            this.width = this.widthPerCent/100 * parentNode.clientWidth;
+        }
+        if ( this.heightPerCent !== undefined ) {
+            this.height = this.heightPerCent/100 * parentNode.clientHeight;
+        }
+    }
+
     addBox(box) {
         const id = this.getNewBoxId;
         box.id = id;
@@ -66,7 +73,9 @@ class Board {
 
     make() {
         const boundZoomed = this.zoomed.bind(this);
-        d3.select(`#${this.targetId}`)
+        d3.select(`#${this.targetId}`).attr("id", this.id);
+        this.setSize();
+        d3.select(`#${this.id}`)
             .attr("class", `board ${this.className}`)
             .attr("id", this.id)
             .style("width",`${this.width}px`)
@@ -112,18 +121,6 @@ class Board {
         const boxes = boardDiv.selectAll(".board-box")
             .data(this.getAllBoxes, k => k.id);
         boxes.each(boxUpdateForD3Each);
-    }
-
-    setWidthFromPerCent() {
-        const boardDiv = d3.select(`#${this.id}`);
-        const parentWidth = boardDiv.parentNode.node().offsetWidth;
-        this.width = parentWidth * this.widthPerCent/100;
-    }
-
-    setHeightFromPerCent() {
-        const boardDiv = d3.select(`#${this.id}`);
-        const parentHeight = boardDiv.parentNode.node().offsetHeight;
-        this.height = parentHeight * this.HeightPerCent/100;
     }
 
 }

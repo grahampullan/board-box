@@ -67,7 +67,7 @@
     ctx.sharedState.data={};
     ctx.sharedState.data['random'] = randomData();
 
-    const board = new bb.Board({width:800, height:600});
+    const board = new bb.Board({widthPerCent:100, height:600});
     ctx.addBoard(board);
 
     const box1 = new bb.Box({position:{x:250,y:0}, width:500, height:500,autoLayout:true});

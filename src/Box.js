@@ -160,7 +160,7 @@ class Box {
             let boxInserted = false;
             let counter = 0
             while ( !boxInserted && counter < 10 ) {
-                console.log(counter);
+                //console.log(counter);
                 if ( iSubRow == 0 && iCol == 0 ) {
                     rowHeight = nextBoxHeight+1; // +1 to avoid rounding errors
                 }
