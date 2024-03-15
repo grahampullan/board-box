@@ -361,6 +361,7 @@ class Box {
         this.position0 = {...this.position};
         this.width0 = this.width;
         this.height0 = this.height;
+        this.raiseDiv();
     }
 
     make() {
@@ -389,6 +390,7 @@ class Box {
             .style("overflow","hidden")
             .call(d3.drag()
                 .subject((e)=>({x: this.position.x, y: this.position.y }))
+                .on("start", boundDragStart )
                 .on("drag", boundDrag )
                 .on("end", boundDragEnd )); 
 
