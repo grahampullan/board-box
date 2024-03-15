@@ -4232,7 +4232,9 @@ class Component{
             .style("width", `${this.containerWidth}px`)
             .style("height", `${this.containertHeight}px`)
             .style("left", `${this.margin.left}px`)
-            .style("top", `${this.margin.top}px`);
+            .style("top", `${this.margin.top}px`)
+            .attr("width", this.containerWidth)
+            .attr("height", this.containerHeight);
     }
 }
 
