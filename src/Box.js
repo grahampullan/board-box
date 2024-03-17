@@ -50,9 +50,9 @@ class Box {
         box.ancestorIds = [...this.ancestorIds];
         box.ancestorIds.push(this.id);
         if (box.component !== undefined) {
-            box.component.sharedState = this.sharedState;
-            box.component.sharedStateByAncestorId = this.sharedStateByAncestorId;
-            box.component.ancestorIds = this.ancestorIds;
+            box.component.sharedState = box.sharedState;
+            box.component.sharedStateByAncestorId = box.sharedStateByAncestorId;
+            box.component.ancestorIds = box.ancestorIds;
             box.component.parentId = box.id;
         }
         this.boxes.push(box);
