@@ -34,6 +34,12 @@ class Observable{
 
     }
 
+    isSubscribed(observer) {
+
+        return this.observers.includes(observer);
+
+    }
+
     unsubscribe(observer) {
 
         this.observers = this.observers.filter(item => item !== observer)
