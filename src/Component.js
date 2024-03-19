@@ -15,6 +15,14 @@ class Component{
         return d3.select(`#${this.parentId}`).node().clientHeight;
     }
 
+    get left() {
+        return d3.select(`#${this.parentId}`).node().getBoundingClientRect().left;
+    }
+
+    get top() {
+        return d3.select(`#${this.parentId}`).node().getBoundingClientRect().top;
+    }
+
     get containerWidth() {
         return this.width - this.margin.left - this.margin.right;
     }
@@ -27,7 +35,7 @@ class Component{
         const container = d3.select(`#${this.parentId}`).select(`.${this.containerClassName}`);
         container
             .style("width", `${this.containerWidth}px`)
-            .style("height", `${this.containertHeight}px`)
+            .style("height", `${this.containerHeight}px`)
             .style("left", `${this.margin.left}px`)
             .style("top", `${this.margin.top}px`)
             .attr("width", this.containerWidth)
