@@ -3534,6 +3534,20 @@ class Observable{
 
     }
 
+    setObserverFirst(observer) {
+
+        this.observers = this.observers.filter(item => item !== observer);
+        this.observers.unshift(observer);
+
+    }
+
+    setObserverLast(observer){
+
+        this.observers = this.observers.filter(item => item !== observer);
+        this.observers.push(observer);
+
+    }
+
 }
 
 class Box {
