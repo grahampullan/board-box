@@ -14,12 +14,12 @@ class Observable{
         
         if( this.flag && this._state ) {
             this.observers.forEach( (observer) => {
-                observer();
+                observer.observer();
             } );
             this._state = false;
         } else {
             this.observers.forEach( (observer) => {
-                observer(data);
+                observer.observer(data);
             } );
         }
 
