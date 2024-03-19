@@ -271,7 +271,8 @@ class Box {
         this.setQuantise();
         this.raiseDiv();
         this.setUntransformed();
-        this.renderDivPosition();
+        this.update();
+        this.updateDescendants();
     }
 
     dragEnd(event) {
