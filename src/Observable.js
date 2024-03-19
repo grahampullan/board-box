@@ -5,6 +5,7 @@ class Observable{
         this.flag = options.flag || false;
         this._state = options.state;
         this.observers=[];
+        this.observerIdMax = 0;
     }
 
     set state(data){
@@ -30,34 +31,52 @@ class Observable{
 
     subscribe(observer) {
 
-        this.observers.push(observer);
+        let id = this.observerIdMax;
+        this.observers.push({observer,id});
+        this.observerIdMax++;
+        return id;
 
     }
 
     isSubscribed(observer) {
 
-        return this.observers.includes(observer);
+        return this.observers.map( d => d.observer).includes(observer);
+
+    }
+
+    isSubscribedById(id) {
+
+        return this.observers.map( d => d.id).includes(id);
 
     }
 
     unsubscribe(observer) {
 
-        this.observers = this.observers.filter(item => item !== observer)
+        this.observers = this.observers.filter(item => item.observer !== observer);
 
     }
 
-    setObserverFirst(observer) {
+    unsubscribeById(id) {
+            
+        this.observers = this.observers.filter(item => item.id !== id);
+    
+    }   
 
-        this.observers = this.observers.filter(item => item !== observer);
+
+    setObserverFirstById(id) {
+
+        let observer = this.observers.filter(item => item.id === id)[0];
+        this.observers = this.observers.filter(item => item.id !== id);
         this.observers.unshift(observer);
 
     }
 
-    setObserverLast(observer){
-
-        this.observers = this.observers.filter(item => item !== observer);
+    setObserverLastById(id) {
+            
+        let observer = this.observers.filter(item => item.id === id)[0];
+        this.observers = this.observers.filter(item => item.id !== id);
         this.observers.push(observer);
-
+    
     }
 
 }
