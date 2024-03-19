@@ -137,7 +137,7 @@ class Box {
     }
 
     raiseDiv() {
-        d3.select(`#${this.id}`).raise();
+        //d3.select(`#${this.id}`).raise();
     }
 
     setAutoLayout() {
