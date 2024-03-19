@@ -54,6 +54,7 @@ class Box {
             box.component.sharedStateByAncestorId = box.sharedStateByAncestorId;
             box.component.ancestorIds = box.ancestorIds;
             box.component.parentId = box.id;
+            box.component.boardId = this.boardId;
         }
         this.boxes.push(box);
         this.boxInsertOrder.push(box.id);

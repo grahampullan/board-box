@@ -66,6 +66,7 @@ class Board {
             box.component.sharedStateByAncestorId = box.sharedStateByAncestorId;
             box.component.ancestorIds = box.ancestorIds;
             box.component.parentId = box.id;
+            box.component.boardId = this.boardId;
         }
         this.boxes.push(box);
         return id;
