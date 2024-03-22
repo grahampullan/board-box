@@ -10,7 +10,8 @@ class Box {
         this.id = options.id || "cont-0";
         this.parentId = options.parentId || "board-0";
         this.boardId = options.boardId || "board-0";
-        this.position = options.position || {x:0, y:0};
+        this.x = options.x || 0;
+        this.y = options.y || 0;
         this.width = options.width || 200;
         this.height = options.height || 300;
         this.heightPerCent = options.heightPerCent;
@@ -25,13 +26,19 @@ class Box {
         this.allowChildrenResizeOnBoardZoom = options.allowChildrenResizeOnBoardZoom || true;
         this.margin = options.margin || 0;
         this.autoLayout = options.autoLayout || false;
+        this.autoNoOverlap = options.autoNoOverlap || false;
         this.boxInsertOrder = [];
         const requestAutoLayout = new Observable({flag:true, state:false});
         requestAutoLayout.subscribe(this.setAutoLayout.bind(this));
+        const requestAutoNoOverlap = new Observable({flag:false, state:false});
+        requestAutoNoOverlap.subscribe(this.setAutoNoOverlap.bind(this));
         const checkInsertOrder = new Observable({state:{pt:{x:0,y:0},id:"box-0"}});
         checkInsertOrder.subscribe(this.setInsertOrder.bind(this));
-        this.sharedState = {...this.sharedState, requestAutoLayout, checkInsertOrder};
+        this.sharedState = {...this.sharedState, requestAutoLayout, requestAutoNoOverlap, checkInsertOrder};
         this.component = options.component;
+        if (this.autoNoOverlap) {
+            this.createForceSimulation();
+        }
     }
 
     get getNewBoxId() {
@@ -44,7 +51,7 @@ class Box {
         const id = this.getNewBoxId;
         box.id = id;
         box.parentId = this.id;
-        box.untransformed = {x:box.position.x, y:box.position.y, width:box.width, height:box.height};
+        box.untransformed = {x:box.x, y:box.y, width:box.width, height:box.height};
         box.sharedStateByAncestorId = {...this.sharedStateByAncestorId};
         box.sharedStateByAncestorId[this.id] = this.sharedState;
         box.ancestorIds = [...this.ancestorIds];
@@ -58,6 +65,9 @@ class Box {
         }
         this.boxes.push(box);
         this.boxInsertOrder.push(box.id);
+        if (this.autoNoOverlap) {
+            this.createForceSimulation();
+        }
         return id;
     }
 
@@ -92,11 +102,11 @@ class Box {
             this.height = this.heightPerCent/100 * parentNode.clientHeight;
         }
         if ( this.quantiseX ) {
-            this.position.x = this.gridX * this.dx;
+            this.x = this.gridX * this.dx;
             this.width = this.gridWidth * this.dx;
         }
         if ( this.quantiseY ) {
-            this.position.y = this.gridY * this.dx;
+            this.y = this.gridY * this.dx;
             this.height = this.gridHeight * this.dx;
         }
     }
@@ -106,14 +116,14 @@ class Box {
         const gridXMax = this.sharedStateByAncestorId[this.parentId].gridXMax;
         this.dx = parentNode.clientWidth / gridXMax;
         if ( this.quantiseX ) {
-            this.gridX = Math.round( this.position.x / this.dx);
-            this.position.x = this.gridX * this.dx;
+            this.gridX = Math.round( this.x / this.dx);
+            this.x = this.gridX * this.dx;
             this.gridWidth = Math.round( this.width / this.dx);
             this.width = this.gridWidth * this.dx;
         }
         if ( this.quantiseY ) {
-            this.gridY = Math.round( this.position.y / this.dx);
-            this.position.y = this.gridY * this.dx;
+            this.gridY = Math.round( this.y / this.dx);
+            this.y = this.gridY * this.dx;
             this.gridHeight = Math.round( this.height / this.dx);
             this.height = this.gridHeight * this.dx;
         }
@@ -124,8 +134,8 @@ class Box {
         const u = {};
         u.width = this.width / t.k;
         u.height = this.height / t.k;
-        u.x = (this.position.x - t.x ) /t.k;
-        u.y = (this.position.y - t.y ) /t.k;
+        u.x = (this.x - t.x ) /t.k;
+        u.y = (this.y - t.y ) /t.k;
         this.untransformed = u;
     }
 
@@ -133,8 +143,8 @@ class Box {
         d3.select(`#${this.id}`)
             .style("width",`${this.width - 2*this.margin}px`)
             .style("height",`${this.height - 2*this.margin}px`)
-            .style("left", `${this.position.x + this.margin}px`)
-            .style("top", `${this.position.y + this.margin}px`); 
+            .style("left", `${this.x + this.margin}px`)
+            .style("top", `${this.y + this.margin}px`); 
     }
 
     raiseDiv() {
@@ -188,8 +198,8 @@ class Box {
                 }
                 if ( widthFits && heightFits ) { // insert box
                     //console.log("inserted");
-                    nextBox.position.x = insertPosition.x;
-                    nextBox.position.y = insertPosition.y; 
+                    nextBox.x = insertPosition.x;
+                    nextBox.y = insertPosition.y; 
                     insertPosition.y += nextBoxHeight;
                     colWidth = Math.max(colWidth, nextBoxWidth);
                     iSubRow++;
@@ -228,10 +238,42 @@ class Box {
         this.updateDescendants();
     }
 
+    createForceSimulation() {
+        const boundUpdateDescendants = this.updateDescendants.bind(this);
+        const simulation = d3.forceSimulation(this.boxes)
+            .force("collide", d3.forceCollide().radius(d => 0.4*Math.sqrt(d.width**2 + d.height**2)).iterations(4))
+            .on("tick", function() {
+                boundUpdateDescendants();
+            })
+            .alpha(0.5)
+            .alphaTarget(0.)
+            .alphaMin(0.1);
+        this.simulation = simulation;
+    }
+
+
+    setAutoNoOverlap(reset) {
+        if ( !this.autoNoOverlap ) {
+            return;
+        }
+        if ( reset ) {
+            this.createForceSimulation();
+        } else {
+            this.simulation.alpha(0.5).restart();
+        }
+    }
+
     requestParentAutoLayout() {
         const parentSharedState = this.sharedStateByAncestorId[this.parentId];
         if ( parentSharedState.requestAutoLayout !== undefined) {
             parentSharedState.requestAutoLayout.state = true;
+        }
+    }
+
+    requestParentAutoNoOverlap(reset) {
+        const parentSharedState = this.sharedStateByAncestorId[this.parentId];
+        if ( parentSharedState.requestAutoNoOverlap !== undefined) {
+            parentSharedState.requestAutoNoOverlap.state = reset;
         }
     }
 
@@ -249,10 +291,10 @@ class Box {
         let found = false;
         let boxInsertOrderNew;
         this.boxes.forEach( box => {
-            let xmin = box.position.x;
-            let xmax = box.position.x + box.width;
-            let ymin = box.position.y;
-            let ymax = box.position.y + box.height;
+            let xmin = box.x;
+            let xmax = box.x + box.width;
+            let ymin = box.y;
+            let ymax = box.y + box.height;
             if ( pt.x >= xmin && pt.x <= xmax && pt.y >= ymin && pt.y <= ymax && id !== box.id ) {
                 found = true;
                 let insertPointId = box.id;
@@ -267,59 +309,64 @@ class Box {
     }
 
     drag(event) {
-        this.position.x = event.x;
-        this.position.y = event.y;
+        this.x = event.x;
+        this.y = event.y;
+        this.fx = event.x;
+        this.fy = event.y;
         this.setQuantise();
         this.raiseDiv();
-        this.setUntransformed();
         this.update();
         this.updateDescendants();
+        this.requestParentAutoNoOverlap(false);
     }
 
     dragEnd(event) {
         this.setParentInsertOrder({pt:{x:event.x, y:event.y}, id:this.id});
         this.requestParentAutoLayout();
+        this.fx = null;
+        this.fy = null;
+        this.requestParentAutoNoOverlap(true);
     }
 
     leftDrag(event) {
-        this.position.x = event.x;
-        let dx = this.position.x - this.position0.x;
+        this.x = event.x;
+        let dx = this.x - this.x0;
         this.width = this.width0 - dx;
         this.setQuantise();
         this.raiseDiv();
-        this.setUntransformed();
         this.update();
         this.updateDescendants();
+        //this.requestParentAutoNoOverlap();
     }
 
     rightDrag(event) {
         this.width = event.x;
         this.setQuantise();
         this.raiseDiv();
-        this.setUntransformed();
         this.update();
         this.updateDescendants();
+        //this.requestParentAutoNoOverlap();
     }
 
     bottomDrag(event) {
         this.height = event.y;
         this.setQuantise();
         this.raiseDiv();
-        this.setUntransformed();
         this.update();
         this.updateDescendants();
+        //this.requestParentAutoNoOverlap();
     }
 
     bottomLeftDrag(event) {
-        this.position.x = event.x;
-        let dx = this.position.x - this.position0.x;
+        this.x = event.x;
+        let dx = this.x - this.x0;
         this.width = this.width0 - dx;
         this.height = event.y;
         this.setQuantise();
         this.raiseDiv();
-        this.setUntransformed();
         this.update();
         this.updateDescendants();
+        //this.requestParentAutoNoOverlap();
     }
 
     bottomRightDrag(event) {
@@ -327,42 +374,44 @@ class Box {
         this.height = event.y;
         this.setQuantise();
         this.raiseDiv();
-        this.setUntransformed();
         this.update();
         this.updateDescendants();
+        //this.requestParentAutoNoOverlap();
     }
 
     topLeftDrag(event) {
-        this.position.x = event.x;
-        this.position.y = event.y;
-        let dx = this.position.x - this.position0.x;
+        this.x = event.x;
+        this.y = event.y;
+        let dx = this.x - this.x0;
         this.width = this.width0 - dx;
-        let dy = this.position.y - this.position0.y;
+        let dy = this.y - this.y0;
         this.height = this.height0 - dy;
         this.setQuantise();
         this.raiseDiv();
-        this.setUntransformed();
         this.update();
         this.updateDescendants();
+        //this.requestParentAutoNoOverlap();
     }
 
     topRightDrag(event) {
-        this.position.y = event.y;
+        this.y = event.y;
         this.width = event.x;
-        let dy = this.position.y - this.position0.y;
+        let dy = this.y - this.y0;
         this.height = this.height0 - dy;
         this.setQuantise();
         this.raiseDiv();
-        this.setUntransformed();
         this.update();
         this.updateDescendants();
-       // this.sharedStateByAncestorId[this.parentId].requestAutoLayout.state = true;
+        //this.requestParentAutoNoOverlap();
     }
 
     dragStart(event){
-        this.position0 = {...this.position};
+        this.x0 = this.x;
+        this.y0 = this.y;
         this.width0 = this.width;
         this.height0 = this.height;
+        this.fx = this.x;
+        this.fy = this.y;
         this.raiseDiv();
     }
 
@@ -386,12 +435,12 @@ class Box {
             .attr("id", this.id)
             .style("width",`${this.width - 2*this.margin}px`)
             .style("height",`${this.height - 2*this.margin}px`)
-            .style("left", `${this.position.x + this.margin}px`)
-            .style("top", `${this.position.y + this.margin}px`)
+            .style("left", `${this.x + this.margin}px`)
+            .style("top", `${this.y + this.margin}px`)
             .style("position","absolute")
             .style("overflow","hidden")
             .call(d3.drag()
-                .subject((e)=>({x: this.position.x, y: this.position.y }))
+                .subject((e)=>({x: this.x, y: this.y }))
                 .on("start", boundDragStart )
                 .on("drag", boundDrag )
                 .on("end", boundDragEnd )); 
@@ -404,11 +453,12 @@ class Box {
             .style("height", "calc(100% - 20px)" )
             .style("position","absolute")
             .call(d3.drag()
-                .subject((e) => ({x: this.position.x, y: 0. }))
+                .subject((e) => ({x: this.x, y: 0. }))
                 .container( () => { return d3.select(`#${this.id}`).node().parentNode } ) 
                 .on("start", boundDragStart )
                 .on("drag", boundLeftDrag )
-                .on("end", boundRequestParentAutoLayout));
+                //.on("end", boundRequestParentAutoLayout));
+                .on("end", boundDragEnd )); 
 
         div.append("div")
             .attr("class","board-box-right-drag")
@@ -421,7 +471,8 @@ class Box {
                 .subject((e) => ({x: this.width, y: 0. }))
                 .on("start", boundDragStart )
                 .on("drag", boundRightDrag)
-                .on("end", boundRequestParentAutoLayout));
+                //.on("end", boundRequestParentAutoLayout));
+                .on("end", boundDragEnd )); 
 
         div.append("div")
             .attr("class","board-box-bottom-drag")
@@ -434,7 +485,8 @@ class Box {
                 .subject((e) => ({x: 0., y: this.height  }))
                 .on("start", boundDragStart )
                 .on("drag", boundBottomDrag)
-                .on("end", boundRequestParentAutoLayout));
+                //.on("end", boundRequestParentAutoLayout));
+                .on("end", boundDragEnd )); 
 
         div.append("div")
             .attr("class","board-box-bottom-left-drag")
@@ -444,11 +496,12 @@ class Box {
             .style("height", "15px")
             .style("position","absolute")
             .call(d3.drag()
-                .subject((e) => ({x: this.position.x, y: this.height  }))
+                .subject((e) => ({x: this.x, y: this.height  }))
                 .container( () => { return d3.select(`#${this.id}`).node().parentNode } ) 
                 .on("start", boundDragStart )
                 .on("drag", boundBottomLeftDrag)
-                .on("end", boundRequestParentAutoLayout));
+                //.on("end", boundRequestParentAutoLayout));
+                .on("end", boundDragEnd )); 
 
         div.append("div")
             .attr("class","board-box-bottom-right-drag")
@@ -461,7 +514,8 @@ class Box {
                 .subject((e) => ({x: this.width, y: this.height  }))
                 .on("start", boundDragStart ) 
                 .on("drag", boundBottomRightDrag)
-                .on("end", boundRequestParentAutoLayout));
+                //.on("end", boundRequestParentAutoLayout));
+                .on("end", boundDragEnd )); 
 
         div.append("div")
             .attr("class","board-box-top-left-drag")
@@ -471,11 +525,12 @@ class Box {
             .style("height", "15px")
             .style("position","absolute")
             .call(d3.drag()
-                .subject((e) => ({x: this.position.x, y: this.position.y  }))
+                .subject((e) => ({x: this.x, y: this.y  }))
                 .container( () => { return d3.select(`#${this.id}`).node().parentNode } )
                 .on("start", boundDragStart ) 
                 .on("drag", boundTopLeftDrag)
-                .on("end", boundRequestParentAutoLayout));
+                //.on("end", boundRequestParentAutoLayout));
+                .on("end", boundDragEnd )); 
 
         div.append("div")
             .attr("class","board-box-top-right-drag")
@@ -485,11 +540,12 @@ class Box {
             .style("height", "15px")
             .style("position","absolute")
             .call(d3.drag()
-                .subject((e) => ({x: this.width, y: this.position.y  }))
+                .subject((e) => ({x: this.width, y: this.y  }))
                 .container( () => { return d3.select(`#${this.id}`).node().parentNode } ) 
                 .on("start", boundDragStart )
                 .on("drag", boundTopRightDrag)
-                .on("end", boundRequestParentAutoLayout));
+                //.on("end", boundRequestParentAutoLayout));
+                .on("end", boundDragEnd )); 
 
         if (this.component !== undefined) {
             this.component.make();
@@ -506,6 +562,7 @@ class Box {
         if (this.component !== undefined) {
             this.component.update();
         }
+        this.setUntransformed();
     }
 
     updateDescendants() {
