@@ -56,7 +56,7 @@ class Board {
     addBox(box) {
         const id = this.getNewBoxId;
         box.id = id;
-        box.untransformed = {x:box.position.x, y:box.position.y, width:box.width, height:box.height};
+        box.untransformed = {x:box.x, y:box.y, width:box.width, height:box.height};
         box.sharedStateByAncestorId = {...this.sharedStateByAncestorId};
         box.sharedStateByAncestorId[this.id] = this.sharedState;
         box.ancestorIds = [...this.ancestorIds];
@@ -101,15 +101,15 @@ class Board {
         this.sharedState.transform = {x:t.x, y:t.y, k:t.k};
         this.boxes.forEach( box => {
             const u = box.untransformed;
-            box.position.x = t.k*u.x + t.x; 
-            box.position.y = t.k*u.y + t.y; 
+            box.x = t.k*u.x + t.x; 
+            box.y = t.k*u.y + t.y; 
             box.width = u.width * t.k;
             box.height = u.height * t.k;
             if (box.allowChildrenResizeOnBoardZoom) {
                 box.boxes.forEach( childBox => {
                     const uc = childBox.untransformed;
-                    childBox.position.x = t.k*uc.x + t.x; 
-                    childBox.position.y = t.k*uc.y + t.y; 
+                    childBox.x = t.k*uc.x + t.x; 
+                    childBox.y = t.k*uc.y + t.y; 
                     childBox.width = uc.width * t.k;
                     childBox.height = uc.height * t.k;
                 });
