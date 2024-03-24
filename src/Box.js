@@ -336,7 +336,7 @@ class Box {
         this.requestParentAutoLayout();
         this.fx = null;
         this.fy = null;
-        this.requestParentAutoNoOverlap(true);
+        //this.requestParentAutoNoOverlap(true);
     }
 
     leftDrag(event) {
