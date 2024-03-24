@@ -83,7 +83,7 @@ class Box {
             boxes.forEach( box => {
                 allBoxes.push(box);
                 if (box.boxes.length !== 0) {
-                    search(box.boxess);
+                    search(box.boxes);
                 }
             });
         }       
@@ -235,19 +235,30 @@ class Box {
                 counter++;
             }
         });
-        this.updateDescendants();
+        this.updateDescendants("normal");
     }
 
     createForceSimulation() {
+        if ( this.simulation !== undefined ) {
+            this.simulation.stop();
+        }
         const boundUpdateDescendants = this.updateDescendants.bind(this);
         const simulation = d3.forceSimulation(this.boxes)
-            .force("collide", d3.forceCollide().radius(d => 0.4*Math.sqrt(d.width**2 + d.height**2)).iterations(4))
+            .force("center", d3.forceCenter(this.width/2, this.height/2))
+            .force("manyBody", d3.forceManyBody().strength(100))
+            .force("collide", d3.forceCollide().radius(d => 0.45*Math.sqrt(d.width**2 + d.height**2)).iterations(4))
             .on("tick", function() {
-                boundUpdateDescendants();
+                if (this.alpha() < this.alphaMin()) {
+                    boundUpdateDescendants("normal")
+                } else {
+                    boundUpdateDescendants("layout");
+                }
             })
-            .alpha(0.5)
+            .alpha(1.)
             .alphaTarget(0.)
-            .alphaMin(0.1);
+            .alphaDecay(0.1)
+            .alphaMin(0.5)
+            //.stop();
         this.simulation = simulation;
     }
 
@@ -259,7 +270,7 @@ class Box {
         if ( reset ) {
             this.createForceSimulation();
         } else {
-            this.simulation.alpha(0.5).restart();
+            this.simulation.alpha(1).restart();
         }
     }
 
@@ -315,8 +326,8 @@ class Box {
         this.fy = event.y;
         this.setQuantise();
         this.raiseDiv();
-        this.update();
-        this.updateDescendants();
+        this.update("move");
+        this.updateDescendants("move");
         this.requestParentAutoNoOverlap(false);
     }
 
@@ -334,27 +345,33 @@ class Box {
         this.width = this.width0 - dx;
         this.setQuantise();
         this.raiseDiv();
-        this.update();
-        this.updateDescendants();
-        //this.requestParentAutoNoOverlap();
+        this.update("normal");
+        this.updateDescendants("normal");
+        this.fx = this.x;
+        this.fy = this.y;
+        this.requestParentAutoNoOverlap(true);
     }
 
     rightDrag(event) {
         this.width = event.x;
         this.setQuantise();
         this.raiseDiv();
-        this.update();
-        this.updateDescendants();
-        //this.requestParentAutoNoOverlap();
+        this.update("normal");
+        this.updateDescendants("normal");
+        this.fx = this.x;
+        this.fy = this.y;
+        this.requestParentAutoNoOverlap(true);
     }
 
     bottomDrag(event) {
         this.height = event.y;
         this.setQuantise();
         this.raiseDiv();
-        this.update();
-        this.updateDescendants();
-        //this.requestParentAutoNoOverlap();
+        this.update("normal");
+        this.updateDescendants("normal");
+        this.fx = this.x;
+        this.fy = this.y;
+        this.requestParentAutoNoOverlap(true);
     }
 
     bottomLeftDrag(event) {
@@ -364,9 +381,11 @@ class Box {
         this.height = event.y;
         this.setQuantise();
         this.raiseDiv();
-        this.update();
-        this.updateDescendants();
-        //this.requestParentAutoNoOverlap();
+        this.update("normal");
+        this.updateDescendants("normal");
+        this.fx = this.x;
+        this.fy = this.y;
+        this.requestParentAutoNoOverlap(true);
     }
 
     bottomRightDrag(event) {
@@ -374,9 +393,11 @@ class Box {
         this.height = event.y;
         this.setQuantise();
         this.raiseDiv();
-        this.update();
-        this.updateDescendants();
-        //this.requestParentAutoNoOverlap();
+        this.update("normal");
+        this.updateDescendants("normal");
+        this.fx = this.x;
+        this.fy = this.y;
+        this.requestParentAutoNoOverlap(true);
     }
 
     topLeftDrag(event) {
@@ -388,9 +409,11 @@ class Box {
         this.height = this.height0 - dy;
         this.setQuantise();
         this.raiseDiv();
-        this.update();
-        this.updateDescendants();
-        //this.requestParentAutoNoOverlap();
+        this.update("normal");
+        this.updateDescendants("normal");
+        this.fx = this.x;
+        this.fy = this.y;
+        this.requestParentAutoNoOverlap(true);
     }
 
     topRightDrag(event) {
@@ -400,9 +423,11 @@ class Box {
         this.height = this.height0 - dy;
         this.setQuantise();
         this.raiseDiv();
-        this.update();
-        this.updateDescendants();
-        //this.requestParentAutoNoOverlap();
+        this.update("normal");
+        this.updateDescendants("normal");
+        this.fx = this.x;
+        this.fy = this.y;
+        this.requestParentAutoNoOverlap(true);
     }
 
     dragStart(event){
@@ -550,26 +575,30 @@ class Box {
         if (this.component !== undefined) {
             this.component.make();
         }
-        this.update();
+        this.update("normal");
     }
 
-    update() {
+    update(type="normal") {
         this.setSize();
         this.renderDivPosition();
         if (this.autoLayout) {
             this.setAutoLayout();
         }
         if (this.component !== undefined) {
+            this.component.updateType = type;
             this.component.update();
         }
         this.setUntransformed();
     }
 
-    updateDescendants() {
-        const div = d3.select(`#${this.id}`);
-        const boxes = div.selectChildren(".board-box")
-            .data(this.getAllBoxes, k => k.id);
-        boxes.each(boxUpdateForD3Each);
+    updateDescendants(type="normal") {
+        //const div = d3.select(`#${this.id}`);
+        //const boxes = div.selectChildren(".board-box")
+        //    .data(this.getAllBoxes, k => k.id);
+        //boxes.each(boxUpdateForD3Each);
+        this.getAllBoxes.forEach( box => {
+            box.update(type);
+        });   
     }
 
 }
@@ -582,7 +611,7 @@ const boxMakeForD3Each = function( d, i ) {
 
 const boxUpdateForD3Each = function( d, i ) {
 
-    d.update();
+    d.update("normal");
 
 }
 

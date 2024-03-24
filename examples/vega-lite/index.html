@@ -82,6 +82,8 @@
     board.addBox(box1);
 
     const margin = {top: 10, right: 50, bottom: 60, left: 20};
+
+    
     box1.addBox( new bb.Box({x:10,y:15, width:200, height:200, margin:4, component:new Scatter({dataId:'random', margin})  }));
     box1.addBox( new bb.Box({x:100,y:25, width:200, height:200, margin:4, component:new Scatter({dataId:'random', margin})  }));
     box1.addBox( new bb.Box({x:10,y:250, width:200, height:200, margin:4, component:new Scatter({dataId:'random', margin})  }));

@@ -37,6 +37,9 @@
         }
 
         update() {
+            if (this.updateType == "layout") {
+                return;
+            }
             const plotArea = d3.select(`#${this.parentId}`).select(`.${this.containerClassName}`);
             plotArea.selectChildren().remove();
             this.setContainerSize();
@@ -57,7 +60,7 @@
     
     function randomData() {
         const data = [];
-        for (let i = 0; i < 100; i++) {
+        for (let i = 0; i < 10; i++) {
             data.push({x: Math.random(), y: Math.random()});
         }
         return data;
@@ -73,9 +76,22 @@
     const box1 = new bb.Box({x:0,y:0, width:800, height:500,autoNoOverlap:true});
     board.addBox(box1);
 
-    box1.addBox( new bb.Box({x:10,y:15, width:200, height:200, margin:4, component:new Scatter({dataId:'random'})  }));
-    box1.addBox( new bb.Box({x:250,y:25, width:200, height:200, margin:4, component:new Scatter({dataId:'random'})  }));
-    box1.addBox( new bb.Box({x:10,y:250, width:200, height:200, margin:4, component:new Scatter({dataId:'random'})  }));
+
+    const width = 100;
+    const height = 100;
+    const ni = 5;
+    const nj = 5;
+    for (let i = 0; i < ni; i++) {
+        for (let j = 0; j < nj; j++) {
+            const scatter = new Scatter({dataId:'random'});
+            const box = new bb.Box({x:i*width*1.1,y:j*height*1.1, width:width, height:height, component: scatter });
+            box1.addBox(box);
+        }
+    }
+
+    //box1.addBox( new bb.Box({x:10,y:15, width:200, height:200, margin:4, component:new Scatter({dataId:'random'})  }));
+    //box1.addBox( new bb.Box({x:250,y:25, width:200, height:200, margin:4, component:new Scatter({dataId:'random'})  }));
+    //box1.addBox( new bb.Box({x:10,y:250, width:200, height:200, margin:4, component:new Scatter({dataId:'random'})  }));
     
     console.log(board);
     board.make();

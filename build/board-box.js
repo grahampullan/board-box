@@ -3487,6 +3487,47 @@ function zoom() {
   return zoom;
 }
 
+function center(x, y) {
+  var nodes, strength = 1;
+
+  if (x == null) x = 0;
+  if (y == null) y = 0;
+
+  function force() {
+    var i,
+        n = nodes.length,
+        node,
+        sx = 0,
+        sy = 0;
+
+    for (i = 0; i < n; ++i) {
+      node = nodes[i], sx += node.x, sy += node.y;
+    }
+
+    for (sx = (sx / n - x) * strength, sy = (sy / n - y) * strength, i = 0; i < n; ++i) {
+      node = nodes[i], node.x -= sx, node.y -= sy;
+    }
+  }
+
+  force.initialize = function(_) {
+    nodes = _;
+  };
+
+  force.x = function(_) {
+    return arguments.length ? (x = +_, force) : x;
+  };
+
+  force.y = function(_) {
+    return arguments.length ? (y = +_, force) : y;
+  };
+
+  force.strength = function(_) {
+    return arguments.length ? (strength = +_, force) : strength;
+  };
+
+  return force;
+}
+
 function tree_add(d) {
   const x = +this._x.call(null, d),
       y = +this._y.call(null, d);
@@ -3904,11 +3945,11 @@ function jiggle(random) {
   return (random() - 0.5) * 1e-6;
 }
 
-function x(d) {
+function x$1(d) {
   return d.x + d.vx;
 }
 
-function y(d) {
+function y$1(d) {
   return d.y + d.vy;
 }
 
@@ -3931,7 +3972,7 @@ function collide(radius) {
         ri2;
 
     for (var k = 0; k < iterations; ++k) {
-      tree = quadtree(nodes, x, y).visitAfter(prepare);
+      tree = quadtree(nodes, x$1, y$1).visitAfter(prepare);
       for (i = 0; i < n; ++i) {
         node = nodes[i];
         ri = radii[node.index], ri2 = ri * ri;
@@ -4009,6 +4050,14 @@ const m = 4294967296; // 2^32
 function lcg() {
   let s = 1;
   return () => (s = (a * s + c) % m) / m;
+}
+
+function x(d) {
+  return d.x;
+}
+
+function y(d) {
+  return d.y;
 }
 
 var initialRadius = 10,
@@ -4154,6 +4203,118 @@ function simulation(nodes) {
       return arguments.length > 1 ? (event.on(name, _), simulation) : event.on(name);
     }
   };
+}
+
+function manyBody() {
+  var nodes,
+      node,
+      random,
+      alpha,
+      strength = constant(-30),
+      strengths,
+      distanceMin2 = 1,
+      distanceMax2 = Infinity,
+      theta2 = 0.81;
+
+  function force(_) {
+    var i, n = nodes.length, tree = quadtree(nodes, x, y).visitAfter(accumulate);
+    for (alpha = _, i = 0; i < n; ++i) node = nodes[i], tree.visit(apply);
+  }
+
+  function initialize() {
+    if (!nodes) return;
+    var i, n = nodes.length, node;
+    strengths = new Array(n);
+    for (i = 0; i < n; ++i) node = nodes[i], strengths[node.index] = +strength(node, i, nodes);
+  }
+
+  function accumulate(quad) {
+    var strength = 0, q, c, weight = 0, x, y, i;
+
+    // For internal nodes, accumulate forces from child quadrants.
+    if (quad.length) {
+      for (x = y = i = 0; i < 4; ++i) {
+        if ((q = quad[i]) && (c = Math.abs(q.value))) {
+          strength += q.value, weight += c, x += c * q.x, y += c * q.y;
+        }
+      }
+      quad.x = x / weight;
+      quad.y = y / weight;
+    }
+
+    // For leaf nodes, accumulate forces from coincident quadrants.
+    else {
+      q = quad;
+      q.x = q.data.x;
+      q.y = q.data.y;
+      do strength += strengths[q.data.index];
+      while (q = q.next);
+    }
+
+    quad.value = strength;
+  }
+
+  function apply(quad, x1, _, x2) {
+    if (!quad.value) return true;
+
+    var x = quad.x - node.x,
+        y = quad.y - node.y,
+        w = x2 - x1,
+        l = x * x + y * y;
+
+    // Apply the Barnes-Hut approximation if possible.
+    // Limit forces for very close nodes; randomize direction if coincident.
+    if (w * w / theta2 < l) {
+      if (l < distanceMax2) {
+        if (x === 0) x = jiggle(random), l += x * x;
+        if (y === 0) y = jiggle(random), l += y * y;
+        if (l < distanceMin2) l = Math.sqrt(distanceMin2 * l);
+        node.vx += x * quad.value * alpha / l;
+        node.vy += y * quad.value * alpha / l;
+      }
+      return true;
+    }
+
+    // Otherwise, process points directly.
+    else if (quad.length || l >= distanceMax2) return;
+
+    // Limit forces for very close nodes; randomize direction if coincident.
+    if (quad.data !== node || quad.next) {
+      if (x === 0) x = jiggle(random), l += x * x;
+      if (y === 0) y = jiggle(random), l += y * y;
+      if (l < distanceMin2) l = Math.sqrt(distanceMin2 * l);
+    }
+
+    do if (quad.data !== node) {
+      w = strengths[quad.data.index] * alpha / l;
+      node.vx += x * w;
+      node.vy += y * w;
+    } while (quad = quad.next);
+  }
+
+  force.initialize = function(_nodes, _random) {
+    nodes = _nodes;
+    random = _random;
+    initialize();
+  };
+
+  force.strength = function(_) {
+    return arguments.length ? (strength = typeof _ === "function" ? _ : constant(+_), initialize(), force) : strength;
+  };
+
+  force.distanceMin = function(_) {
+    return arguments.length ? (distanceMin2 = _ * _, force) : Math.sqrt(distanceMin2);
+  };
+
+  force.distanceMax = function(_) {
+    return arguments.length ? (distanceMax2 = _ * _, force) : Math.sqrt(distanceMax2);
+  };
+
+  force.theta = function(_) {
+    return arguments.length ? (theta2 = _ * _, force) : Math.sqrt(theta2);
+  };
+
+  return force;
 }
 
 class Observable{
@@ -4320,7 +4481,7 @@ class Box {
             boxes.forEach( box => {
                 allBoxes.push(box);
                 if (box.boxes.length !== 0) {
-                    search(box.boxess);
+                    search(box.boxes);
                 }
             });
         };       
@@ -4472,19 +4633,30 @@ class Box {
                 counter++;
             }
         });
-        this.updateDescendants();
+        this.updateDescendants("normal");
     }
 
     createForceSimulation() {
+        if ( this.simulation !== undefined ) {
+            this.simulation.stop();
+        }
         const boundUpdateDescendants = this.updateDescendants.bind(this);
         const simulation$1 = simulation(this.boxes)
-            .force("collide", collide().radius(d => 0.4*Math.sqrt(d.width**2 + d.height**2)).iterations(4))
+            .force("center", center(this.width/2, this.height/2))
+            .force("manyBody", manyBody().strength(100))
+            .force("collide", collide().radius(d => 0.45*Math.sqrt(d.width**2 + d.height**2)).iterations(4))
             .on("tick", function() {
-                boundUpdateDescendants();
+                if (this.alpha() < this.alphaMin()) {
+                    boundUpdateDescendants("normal");
+                } else {
+                    boundUpdateDescendants("layout");
+                }
             })
-            .alpha(0.5)
+            .alpha(1.)
             .alphaTarget(0.)
-            .alphaMin(0.1);
+            .alphaDecay(0.1)
+            .alphaMin(0.5);
+            //.stop();
         this.simulation = simulation$1;
     }
 
@@ -4496,7 +4668,7 @@ class Box {
         if ( reset ) {
             this.createForceSimulation();
         } else {
-            this.simulation.alpha(0.5).restart();
+            this.simulation.alpha(1).restart();
         }
     }
 
@@ -4552,8 +4724,8 @@ class Box {
         this.fy = event.y;
         this.setQuantise();
         this.raiseDiv();
-        this.update();
-        this.updateDescendants();
+        this.update("move");
+        this.updateDescendants("move");
         this.requestParentAutoNoOverlap(false);
     }
 
@@ -4571,27 +4743,33 @@ class Box {
         this.width = this.width0 - dx;
         this.setQuantise();
         this.raiseDiv();
-        this.update();
-        this.updateDescendants();
-        //this.requestParentAutoNoOverlap();
+        this.update("normal");
+        this.updateDescendants("normal");
+        this.fx = this.x;
+        this.fy = this.y;
+        this.requestParentAutoNoOverlap(true);
     }
 
     rightDrag(event) {
         this.width = event.x;
         this.setQuantise();
         this.raiseDiv();
-        this.update();
-        this.updateDescendants();
-        //this.requestParentAutoNoOverlap();
+        this.update("normal");
+        this.updateDescendants("normal");
+        this.fx = this.x;
+        this.fy = this.y;
+        this.requestParentAutoNoOverlap(true);
     }
 
     bottomDrag(event) {
         this.height = event.y;
         this.setQuantise();
         this.raiseDiv();
-        this.update();
-        this.updateDescendants();
-        //this.requestParentAutoNoOverlap();
+        this.update("normal");
+        this.updateDescendants("normal");
+        this.fx = this.x;
+        this.fy = this.y;
+        this.requestParentAutoNoOverlap(true);
     }
 
     bottomLeftDrag(event) {
@@ -4601,9 +4779,11 @@ class Box {
         this.height = event.y;
         this.setQuantise();
         this.raiseDiv();
-        this.update();
-        this.updateDescendants();
-        //this.requestParentAutoNoOverlap();
+        this.update("normal");
+        this.updateDescendants("normal");
+        this.fx = this.x;
+        this.fy = this.y;
+        this.requestParentAutoNoOverlap(true);
     }
 
     bottomRightDrag(event) {
@@ -4611,9 +4791,11 @@ class Box {
         this.height = event.y;
         this.setQuantise();
         this.raiseDiv();
-        this.update();
-        this.updateDescendants();
-        //this.requestParentAutoNoOverlap();
+        this.update("normal");
+        this.updateDescendants("normal");
+        this.fx = this.x;
+        this.fy = this.y;
+        this.requestParentAutoNoOverlap(true);
     }
 
     topLeftDrag(event) {
@@ -4625,9 +4807,11 @@ class Box {
         this.height = this.height0 - dy;
         this.setQuantise();
         this.raiseDiv();
-        this.update();
-        this.updateDescendants();
-        //this.requestParentAutoNoOverlap();
+        this.update("normal");
+        this.updateDescendants("normal");
+        this.fx = this.x;
+        this.fy = this.y;
+        this.requestParentAutoNoOverlap(true);
     }
 
     topRightDrag(event) {
@@ -4637,9 +4821,11 @@ class Box {
         this.height = this.height0 - dy;
         this.setQuantise();
         this.raiseDiv();
-        this.update();
-        this.updateDescendants();
-        //this.requestParentAutoNoOverlap();
+        this.update("normal");
+        this.updateDescendants("normal");
+        this.fx = this.x;
+        this.fy = this.y;
+        this.requestParentAutoNoOverlap(true);
     }
 
     dragStart(event){
@@ -4787,26 +4973,30 @@ class Box {
         if (this.component !== undefined) {
             this.component.make();
         }
-        this.update();
+        this.update("normal");
     }
 
-    update() {
+    update(type="normal") {
         this.setSize();
         this.renderDivPosition();
         if (this.autoLayout) {
             this.setAutoLayout();
         }
         if (this.component !== undefined) {
+            this.component.updateType = type;
             this.component.update();
         }
         this.setUntransformed();
     }
 
-    updateDescendants() {
-        const div = select(`#${this.id}`);
-        const boxes = div.selectChildren(".board-box")
-            .data(this.getAllBoxes, k => k.id);
-        boxes.each(boxUpdateForD3Each);
+    updateDescendants(type="normal") {
+        //const div = d3.select(`#${this.id}`);
+        //const boxes = div.selectChildren(".board-box")
+        //    .data(this.getAllBoxes, k => k.id);
+        //boxes.each(boxUpdateForD3Each);
+        this.getAllBoxes.forEach( box => {
+            box.update(type);
+        });   
     }
 
 }
@@ -4819,7 +5009,7 @@ const boxMakeForD3Each = function( d, i ) {
 
 const boxUpdateForD3Each = function( d, i ) {
 
-    d.update();
+    d.update("normal");
 
 };
 
