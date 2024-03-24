@@ -4971,6 +4971,7 @@ class Box {
                 .on("end", boundDragEnd )); 
 
         if (this.component !== undefined) {
+            this.component.updateType = "normal";
             this.component.make();
         }
         this.update("normal");
