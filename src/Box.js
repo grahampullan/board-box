@@ -1,5 +1,7 @@
 import * as d3 from './d3-re-export.js';
 import { Observable } from './Observable.js';
+//import { rectCollide } from './rectCollide.js';
+import { collideRectCenter } from './collideRecCenter.js';
 
 class Box {
     constructor(options) {
@@ -246,7 +248,7 @@ class Box {
         const simulation = d3.forceSimulation(this.boxes)
             .force("center", d3.forceCenter(this.width/2, this.height/2))
             .force("manyBody", d3.forceManyBody().strength(100))
-            .force("collide", d3.forceCollide().radius(d => 0.45*Math.sqrt(d.width**2 + d.height**2)).iterations(4))
+            .force("collide", collideRectCenter( d => 0.45*Math.sqrt(d.width**2 + d.height**2) ).iterations(4))
             .on("tick", function() {
                 if (this.alpha() < this.alphaMin()) {
                     boundUpdateDescendants("normal")
