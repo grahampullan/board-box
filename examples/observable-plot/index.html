@@ -40,9 +40,12 @@
             if (this.updateType == "layout") {
                 return;
             }
+            this.setContainerSize();
+            if (this.updateType == "move") {
+                return;
+            }
             const plotArea = d3.select(`#${this.parentId}`).select(`.${this.containerClassName}`);
             plotArea.selectChildren().remove();
-            this.setContainerSize();
             const data = this.sharedStateByAncestorId['context'].data[this.dataId];
             const plot = Plot.plot({
                 width: this.containerWidth,

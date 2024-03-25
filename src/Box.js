@@ -250,6 +250,7 @@ class Box {
             .force("manyBody", d3.forceManyBody().strength(100))
             .force("collide", collideRectCenter( d => 0.45*Math.sqrt(d.width**2 + d.height**2) ).iterations(4))
             .on("tick", function() {
+                //console.log("tick");
                 if (this.alpha() < this.alphaMin()) {
                     boundUpdateDescendants("normal")
                 } else {
@@ -336,8 +337,8 @@ class Box {
     dragEnd(event) {
         this.setParentInsertOrder({pt:{x:event.x, y:event.y}, id:this.id});
         this.requestParentAutoLayout();
-        this.fx = null;
-        this.fy = null;
+        //this.fx = null;
+        //this.fy = null;
         //this.requestParentAutoNoOverlap(true);
     }
 
