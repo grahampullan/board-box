@@ -4660,7 +4660,6 @@ class Box {
             .force("manyBody", manyBody().strength(100))
             .force("collide", collideRectCenter( d => 0.45*Math.sqrt(d.width**2 + d.height**2) ).iterations(4))
             .on("tick", function() {
-                //console.log("tick");
                 if (this.alpha() < this.alphaMin()) {
                     boundUpdateDescendants("normal");
                 } else {
@@ -4694,7 +4693,11 @@ class Box {
         }
     }
 
-    requestParentAutoNoOverlap(reset) {
+    requestParentAutoNoOverlap(reset, fixedId) {
+        this.boxes.filter( box => box.id !== fixedId).forEach( box => {
+            box.fx = null;
+            box.fy = null;
+        });
         const parentSharedState = this.sharedStateByAncestorId[this.parentId];
         if ( parentSharedState.requestAutoNoOverlap !== undefined) {
             parentSharedState.requestAutoNoOverlap.state = reset;
@@ -4741,15 +4744,13 @@ class Box {
         this.raiseDiv();
         this.update("move");
         this.updateDescendants("move");
-        this.requestParentAutoNoOverlap(false);
+        this.requestParentAutoNoOverlap(false, this.id);
     }
 
     dragEnd(event) {
         this.setParentInsertOrder({pt:{x:event.x, y:event.y}, id:this.id});
         this.requestParentAutoLayout();
-        //this.fx = null;
-        //this.fy = null;
-        //this.requestParentAutoNoOverlap(true);
+        this.requestParentAutoNoOverlap(false, this.id);
     }
 
     leftDrag(event) {
@@ -4762,7 +4763,7 @@ class Box {
         this.updateDescendants("normal");
         this.fx = this.x;
         this.fy = this.y;
-        this.requestParentAutoNoOverlap(true);
+        this.requestParentAutoNoOverlap(true, this.id);
     }
 
     rightDrag(event) {
@@ -4773,7 +4774,7 @@ class Box {
         this.updateDescendants("normal");
         this.fx = this.x;
         this.fy = this.y;
-        this.requestParentAutoNoOverlap(true);
+        this.requestParentAutoNoOverlap(true, this.id);
     }
 
     bottomDrag(event) {
@@ -4784,7 +4785,7 @@ class Box {
         this.updateDescendants("normal");
         this.fx = this.x;
         this.fy = this.y;
-        this.requestParentAutoNoOverlap(true);
+        this.requestParentAutoNoOverlap(true,this.id);
     }
 
     bottomLeftDrag(event) {
@@ -4798,7 +4799,7 @@ class Box {
         this.updateDescendants("normal");
         this.fx = this.x;
         this.fy = this.y;
-        this.requestParentAutoNoOverlap(true);
+        this.requestParentAutoNoOverlap(true, this.id);
     }
 
     bottomRightDrag(event) {
@@ -4810,7 +4811,7 @@ class Box {
         this.updateDescendants("normal");
         this.fx = this.x;
         this.fy = this.y;
-        this.requestParentAutoNoOverlap(true);
+        this.requestParentAutoNoOverlap(true, this.id);
     }
 
     topLeftDrag(event) {
@@ -4826,7 +4827,7 @@ class Box {
         this.updateDescendants("normal");
         this.fx = this.x;
         this.fy = this.y;
-        this.requestParentAutoNoOverlap(true);
+        this.requestParentAutoNoOverlap(true, this.id);
     }
 
     topRightDrag(event) {
@@ -4840,7 +4841,7 @@ class Box {
         this.updateDescendants("normal");
         this.fx = this.x;
         this.fy = this.y;
-        this.requestParentAutoNoOverlap(true);
+        this.requestParentAutoNoOverlap(true, this.id);
     }
 
     dragStart(event){
