@@ -27,12 +27,7 @@
             this.dataId = options.dataId;
         }
 
-        make() {
-            const div = d3.select(`#${this.parentId}`);
-            div.append("div")
-                .attr("class", `${this.containerClassName}`)
-                .style("position", "absolute");
-            this.setContainerSize();  
+        make() { 
             this.update();
         }
 
@@ -40,16 +35,15 @@
             if (this.updateType == "layout") {
                 return;
             }
-            this.setContainerSize();
             if (this.updateType == "move") {
                 return;
             }
-            const plotArea = d3.select(`#${this.parentId}`).select(`.${this.containerClassName}`);
+            const plotArea = d3.select(`#${this.id}`)
             plotArea.selectChildren().remove();
             const data = this.sharedStateByAncestorId['context'].data[this.dataId];
             const plot = Plot.plot({
-                width: this.containerWidth,
-                height: this.containerHeight,
+                width: this.width,
+                height: this.height,
                 marks: [
                     Plot.dot(data, {x: "x", y: "y"}),
                     Plot.ruleX([0]),
@@ -76,14 +70,14 @@
     const board = new bb.Board({widthPerCent:100, height:600});
     ctx.addBoard(board);
 
-    const box1 = new bb.Box({x:0,y:0, width:800, height:500,autoNoOverlap:true});
+    const box1 = new bb.Box({x:0,y:0, width:800, height:500,autoNoOverlap:false});
     board.addBox(box1);
 
 
-    const width = 100;
-    const height = 100;
-    const ni = 5;
-    const nj = 5;
+    const width = 200;
+    const height = 200;
+    const ni = 3;
+    const nj = 1;
     for (let i = 0; i < ni; i++) {
         for (let j = 0; j < nj; j++) {
             const scatter = new Scatter({dataId:'random'});

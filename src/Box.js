@@ -1,6 +1,5 @@
 import * as d3 from './d3-re-export.js';
 import { Observable } from './Observable.js';
-//import { rectCollide } from './rectCollide.js';
 import { collideRectCenter } from './collideRecCenter.js';
 
 class Box {
@@ -20,16 +19,17 @@ class Box {
         this.widthPerCent = options.widthPerCent;
         this.quantiseX = options.quantiseX || false;
         this.quantiseY = options.quantiseY || false;
+        this.margin = options.margin || 0;
         this.gridX = options.gridX;
         this.gridWidth = options.gridWidth;
         this.gridY = options.gridY;
         this.gridHeight = options.gridHeight;
         this.sharedState.gridXMax = options.gridXMax || 12;
         this.allowChildrenResizeOnBoardZoom = options.allowChildrenResizeOnBoardZoom || true;
-        this.margin = options.margin || 0;
         this.autoLayout = options.autoLayout || false;
         this.autoNoOverlap = options.autoNoOverlap || false;
         this.boxInsertOrder = [];
+        this.componentMargin = options.componentMargin || {top:10, right:10, bottom:10, left:10};
         const requestAutoLayout = new Observable({flag:true, state:false});
         requestAutoLayout.subscribe(this.setAutoLayout.bind(this));
         const requestAutoNoOverlap = new Observable({flag:false, state:false});
@@ -41,12 +41,6 @@ class Box {
         if (this.autoNoOverlap) {
             this.createForceSimulation();
         }
-    }
-
-    get getNewBoxId() {
-        const id = `${this.id}-cont-${this.maxBox}`;
-        this.maxBox++;
-        return id;
     }
 
     addBox(box) {
@@ -62,7 +56,7 @@ class Box {
             box.component.sharedState = box.sharedState;
             box.component.sharedStateByAncestorId = box.sharedStateByAncestorId;
             box.component.ancestorIds = box.ancestorIds;
-            box.component.parentId = box.id;
+            box.component.id = box.componentId;
             box.component.boardId = this.boardId;
         }
         this.boxes.push(box);
@@ -76,6 +70,11 @@ class Box {
     get getNewBoxId() {
         const id = `${this.id}-box-${this.maxBox}`;
         this.maxBox++;
+        return id;
+    }
+
+    get componentId() {
+        const id = `${this.id}-component`;
         return id;
     }
 
@@ -152,6 +151,30 @@ class Box {
     raiseDiv() {
         d3.select(`#${this.id}`).raise();
     }
+
+    makeComponentDiv() {
+        const div = d3.select(`#${this.id}`);
+        div.append("div")
+            .attr("id", `${this.componentId}`)
+            .attr("class", "board-box-component")
+            .style("width",`${this.width - this.componentMargin.left - this.componentMargin.right}px`)
+            .style("height",`${this.height - this.componentMargin.top - this.componentMargin.bottom}px`)
+            .style("left", `${this.componentMargin.left}px`)
+            .style("top", `${this.componentMargin.top}px`)
+            .style("position","absolute")
+            .style("overflow","hidden");
+    }
+
+    updateComponentDiv() {
+        const div = d3.select(`#${this.id}`);
+        const componentDiv = div.select(".board-box-component");
+        componentDiv
+            .style("width",`${this.width - this.componentMargin.left - this.componentMargin.right}px`)
+            .style("height",`${this.height - this.componentMargin.top - this.componentMargin.bottom}px`)
+            .style("left", `${this.componentMargin.left}px`)
+            .style("top", `${this.componentMargin.top}px`);
+    }
+
 
     setAutoLayout() {
         if ( !this.autoLayout ) {
@@ -577,6 +600,7 @@ class Box {
                 .on("end", boundDragEnd )); 
 
         if (this.component !== undefined) {
+            this.makeComponentDiv();
             this.component.updateType = "normal";
             this.component.make();
         }
@@ -586,10 +610,12 @@ class Box {
     update(type="normal") {
         this.setSize();
         this.renderDivPosition();
+
         if (this.autoLayout) {
             this.setAutoLayout();
         }
         if (this.component !== undefined) {
+            this.updateComponentDiv();
             this.component.updateType = type;
             this.component.update();
         }
