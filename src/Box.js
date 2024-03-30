@@ -41,23 +41,31 @@ class Box {
         if (this.autoNoOverlap) {
             this.createForceSimulation();
         }
+        this.locationForChildBoxes = options.locationForChildBoxes;
     }
 
     addBox(box) {
         const id = this.getNewBoxId;
         box.id = id;
-        box.parentId = this.id;
+        if (this.locationForChildBoxes !== undefined) {
+            this.parentIdForChildBoxes = `${this.id}-${this.locationForChildBoxes}`;
+        } else {
+            this.parentIdForChildBoxes = this.id;
+        }
+        box.parentId = this.parentIdForChildBoxes;
         box.untransformed = {x:box.x, y:box.y, width:box.width, height:box.height};
         box.sharedStateByAncestorId = {...this.sharedStateByAncestorId};
         box.sharedStateByAncestorId[this.id] = this.sharedState;
         box.ancestorIds = [...this.ancestorIds];
         box.ancestorIds.push(this.id);
-        if (box.component !== undefined) {
-            box.component.sharedState = box.sharedState;
-            box.component.sharedStateByAncestorId = box.sharedStateByAncestorId;
-            box.component.ancestorIds = box.ancestorIds;
-            box.component.id = box.componentId;
-            box.component.boardId = this.boardId;
+        const component = box.component;
+        if (component !== undefined) {
+            component.sharedState = box.sharedState;
+            component.sharedStateByAncestorId = box.sharedStateByAncestorId;
+            component.ancestorIds = box.ancestorIds;
+            component.id = box.componentId;
+            component.boxId = box.id;
+            component.boardId = this.boardId;
         }
         this.boxes.push(box);
         this.boxInsertOrder.push(box.id);
