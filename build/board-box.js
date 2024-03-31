@@ -4458,24 +4458,26 @@ class Box {
     addBox(box) {
         const id = this.getNewBoxId;
         box.id = id;
+        box.boxId = id;
         if (this.locationForChildBoxes !== undefined) {
-            this.parentIdForChildBoxes = `${this.id}-${this.locationForChildBoxes}`;
+            this.parentIdForChildBoxes = `${this.boxId}-${this.locationForChildBoxes}`;
         } else {
-            this.parentIdForChildBoxes = this.id;
+            this.parentIdForChildBoxes = this.boxId;
         }
         box.parentId = this.parentIdForChildBoxes;
+        box.parentBoxId = this.boxId;
         box.untransformed = {x:box.x, y:box.y, width:box.width, height:box.height};
         box.sharedStateByAncestorId = {...this.sharedStateByAncestorId};
         box.sharedStateByAncestorId[this.id] = this.sharedState;
         box.ancestorIds = [...this.ancestorIds];
-        box.ancestorIds.push(this.id);
+        box.ancestorIds.push(this.boxId);
         const component = box.component;
         if (component !== undefined) {
             component.sharedState = box.sharedState;
             component.sharedStateByAncestorId = box.sharedStateByAncestorId;
             component.ancestorIds = box.ancestorIds;
             component.id = box.componentId;
-            component.boxId = box.id;
+            component.boxId = box.boxId;
             component.boardId = this.boardId;
         }
         this.boxes.push(box);
@@ -4487,13 +4489,13 @@ class Box {
     }
 
     get getNewBoxId() {
-        const id = `${this.id}-box-${this.maxBox}`;
+        const id = `${this.boxId}-box-${this.maxBox}`;
         this.maxBox++;
         return id;
     }
 
     get componentId() {
-        const id = `${this.id}-component`;
+        const id = `${this.boxId}-component`;
         return id;
     }
 
@@ -4513,7 +4515,7 @@ class Box {
 
     setSize() {
         const parentNode = select(`#${this.parentId}`).node();
-        const gridXMax = this.sharedStateByAncestorId[this.parentId].gridXMax;
+        const gridXMax = this.sharedStateByAncestorId[this.parentBoxId].gridXMax;
         this.dx = parentNode.clientWidth / gridXMax;
         if ( this.widthPerCent !== undefined ) {
             this.width = this.widthPerCent/100 * parentNode.clientWidth;
@@ -4533,7 +4535,7 @@ class Box {
 
     setQuantise() {
         const parentNode = select(`#${this.parentId}`).node();
-        const gridXMax = this.sharedStateByAncestorId[this.parentId].gridXMax;
+        const gridXMax = this.sharedStateByAncestorId[this.parentBoxId].gridXMax;
         this.dx = parentNode.clientWidth / gridXMax;
         if ( this.quantiseX ) {
             this.gridX = Math.round( this.x / this.dx);
@@ -5118,7 +5120,9 @@ class Board {
     addBox(box) {
         const id = this.getNewBoxId;
         box.id = id;
+        box.boxId = id;
         box.parentId = this.id;
+        box.parentBoxId = this.id;
         box.untransformed = {x:box.x, y:box.y, width:box.width, height:box.height};
         box.sharedStateByAncestorId = {...this.sharedStateByAncestorId};
         box.sharedStateByAncestorId[this.id] = this.sharedState;
