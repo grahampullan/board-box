@@ -310,7 +310,7 @@ class Box {
     }
 
     requestParentAutoLayout() {
-        const parentSharedState = this.sharedStateByAncestorId[this.parentId];
+        const parentSharedState = this.sharedStateByAncestorId[this.parentBoxId];
         if ( parentSharedState.requestAutoLayout !== undefined) {
             parentSharedState.requestAutoLayout.state = true;
         }
@@ -321,16 +321,16 @@ class Box {
             box.fx = null;
             box.fy = null;
         });
-        const parentSharedState = this.sharedStateByAncestorId[this.parentId];
+        const parentSharedState = this.sharedStateByAncestorId[this.parentBoxId];
         if ( parentSharedState.requestAutoNoOverlap !== undefined) {
             parentSharedState.requestAutoNoOverlap.state = reset;
         }
     }
 
     setParentInsertOrder(data) {
-        const parentSharedState = this.sharedStateByAncestorId[this.parentId];
+        const parentSharedState = this.sharedStateByAncestorId[this.parentBoxId];
         if ( parentSharedState.checkInsertOrder !== undefined) {
-            this.sharedStateByAncestorId[this.parentId].checkInsertOrder.state = data;
+            this.sharedStateByAncestorId[this.parentBoxId].checkInsertOrder.state = data;
         }
     }
 
