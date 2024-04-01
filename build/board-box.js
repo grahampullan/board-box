@@ -3487,47 +3487,6 @@ function zoom() {
   return zoom;
 }
 
-function center(x, y) {
-  var nodes, strength = 1;
-
-  if (x == null) x = 0;
-  if (y == null) y = 0;
-
-  function force() {
-    var i,
-        n = nodes.length,
-        node,
-        sx = 0,
-        sy = 0;
-
-    for (i = 0; i < n; ++i) {
-      node = nodes[i], sx += node.x, sy += node.y;
-    }
-
-    for (sx = (sx / n - x) * strength, sy = (sy / n - y) * strength, i = 0; i < n; ++i) {
-      node = nodes[i], node.x -= sx, node.y -= sy;
-    }
-  }
-
-  force.initialize = function(_) {
-    nodes = _;
-  };
-
-  force.x = function(_) {
-    return arguments.length ? (x = +_, force) : x;
-  };
-
-  force.y = function(_) {
-    return arguments.length ? (y = +_, force) : y;
-  };
-
-  force.strength = function(_) {
-    return arguments.length ? (strength = +_, force) : strength;
-  };
-
-  return force;
-}
-
 function tree_add(d) {
   const x = +this._x.call(null, d),
       y = +this._y.call(null, d);
@@ -4443,7 +4402,7 @@ class Box {
         this.componentMargin = options.componentMargin || {top:10, right:10, bottom:10, left:10};
         const requestAutoLayout = new Observable({flag:true, state:false});
         requestAutoLayout.subscribe(this.setAutoLayout.bind(this));
-        const requestAutoNoOverlap = new Observable({flag:false, state:false});
+        const requestAutoNoOverlap = new Observable({flag:false, state:{}});
         requestAutoNoOverlap.subscribe(this.setAutoNoOverlap.bind(this));
         const checkInsertOrder = new Observable({state:{pt:{x:0,y:0},id:"box-0"}});
         checkInsertOrder.subscribe(this.setInsertOrder.bind(this));
@@ -4688,9 +4647,11 @@ class Box {
         if ( this.simulation !== undefined ) {
             this.simulation.stop();
         }
+        this.width;
+        this.height;
         const boundUpdateDescendants = this.updateDescendants.bind(this);
         const simulation$1 = simulation(this.boxes)
-            .force("center", center(this.width/2, this.height/2))
+            //.force("center", d3.forceCenter(width/2, height/2))
             .force("manyBody", manyBody().strength(100))
             .force("collide", collideRectCenter( d => 0.45*Math.sqrt(d.width**2 + d.height**2) ).iterations(4))
             .on("tick", function() {
@@ -4709,10 +4670,18 @@ class Box {
     }
 
 
-    setAutoNoOverlap(reset) {
+    setAutoNoOverlap(options) {
         if ( !this.autoNoOverlap ) {
             return;
         }
+        const reset = options.reset;
+        const fixedId = options.fixedId;
+        this.boxes.filter( box => box.id !== fixedId).forEach( box => {
+            if ( box.id !== fixedId ) {
+                box.fx = null;
+                box.fy = null;
+            }
+        });
         if ( reset ) {
             this.createForceSimulation();
         } else {
@@ -4728,13 +4697,13 @@ class Box {
     }
 
     requestParentAutoNoOverlap(reset, fixedId) {
-        this.boxes.filter( box => box.id !== fixedId).forEach( box => {
-            box.fx = null;
-            box.fy = null;
-        });
+        //this.boxes.filter( box => box.id !== fixedId).forEach( box => {
+        //    box.fx = null;
+        //    box.fy = null;
+        //});
         const parentSharedState = this.sharedStateByAncestorId[this.parentBoxId];
         if ( parentSharedState.requestAutoNoOverlap !== undefined) {
-            parentSharedState.requestAutoNoOverlap.state = reset;
+            parentSharedState.requestAutoNoOverlap.state = {reset, fixedId};
         }
     }
 

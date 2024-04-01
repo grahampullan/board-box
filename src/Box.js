@@ -32,7 +32,7 @@ class Box {
         this.componentMargin = options.componentMargin || {top:10, right:10, bottom:10, left:10};
         const requestAutoLayout = new Observable({flag:true, state:false});
         requestAutoLayout.subscribe(this.setAutoLayout.bind(this));
-        const requestAutoNoOverlap = new Observable({flag:false, state:false});
+        const requestAutoNoOverlap = new Observable({flag:false, state:{}});
         requestAutoNoOverlap.subscribe(this.setAutoNoOverlap.bind(this));
         const checkInsertOrder = new Observable({state:{pt:{x:0,y:0},id:"box-0"}});
         checkInsertOrder.subscribe(this.setInsertOrder.bind(this));
@@ -277,9 +277,11 @@ class Box {
         if ( this.simulation !== undefined ) {
             this.simulation.stop();
         }
+        const width = this.width;
+        const height = this.height;
         const boundUpdateDescendants = this.updateDescendants.bind(this);
         const simulation = d3.forceSimulation(this.boxes)
-            .force("center", d3.forceCenter(this.width/2, this.height/2))
+            //.force("center", d3.forceCenter(width/2, height/2))
             .force("manyBody", d3.forceManyBody().strength(100))
             .force("collide", collideRectCenter( d => 0.45*Math.sqrt(d.width**2 + d.height**2) ).iterations(4))
             .on("tick", function() {
@@ -298,10 +300,18 @@ class Box {
     }
 
 
-    setAutoNoOverlap(reset) {
+    setAutoNoOverlap(options) {
         if ( !this.autoNoOverlap ) {
             return;
         }
+        const reset = options.reset;
+        const fixedId = options.fixedId;
+        this.boxes.filter( box => box.id !== fixedId).forEach( box => {
+            if ( box.id !== fixedId ) {
+                box.fx = null;
+                box.fy = null;
+            }
+        });
         if ( reset ) {
             this.createForceSimulation();
         } else {
@@ -317,13 +327,13 @@ class Box {
     }
 
     requestParentAutoNoOverlap(reset, fixedId) {
-        this.boxes.filter( box => box.id !== fixedId).forEach( box => {
-            box.fx = null;
-            box.fy = null;
-        });
+        //this.boxes.filter( box => box.id !== fixedId).forEach( box => {
+        //    box.fx = null;
+        //    box.fy = null;
+        //});
         const parentSharedState = this.sharedStateByAncestorId[this.parentBoxId];
         if ( parentSharedState.requestAutoNoOverlap !== undefined) {
-            parentSharedState.requestAutoNoOverlap.state = reset;
+            parentSharedState.requestAutoNoOverlap.state = {reset, fixedId};
         }
     }
 
