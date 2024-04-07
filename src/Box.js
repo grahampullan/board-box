@@ -510,12 +510,12 @@ class Box {
             .style("left", `${this.x + this.margin}px`)
             .style("top", `${this.y + this.margin}px`)
             .style("position","absolute")
-            .style("overflow","hidden");
-            //.call(d3.drag()
-            //    .subject((e)=>({x: this.x, y: this.y }))
-            //    .on("start", boundDragStart )
-            //    .on("drag", boundDrag )
-            //    .on("end", boundDragEnd )); 
+            .style("overflow","hidden")
+            .call(d3.drag()
+                .subject((e)=>({x: this.x, y: this.y }))
+                .on("start", boundDragStart )
+                .on("drag", boundDrag )
+                .on("end", boundDragEnd )); 
 
         div.append("div")
             .attr("class","board-box-left-drag")
