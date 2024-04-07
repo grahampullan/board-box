@@ -4473,7 +4473,7 @@ class Box {
     }
 
     setSize() {
-        const parentNode = select(`#${this.parentId}`).node();
+        const parentNode = select(`#${this.parentBoxId}`).node();
         const gridXMax = this.sharedStateByAncestorId[this.parentBoxId].gridXMax;
         this.dx = parentNode.clientWidth / gridXMax;
         if ( this.widthPerCent !== undefined ) {

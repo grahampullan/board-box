@@ -103,7 +103,7 @@ class Box {
     }
 
     setSize() {
-        const parentNode = d3.select(`#${this.parentId}`).node();
+        const parentNode = d3.select(`#${this.parentBoxId}`).node();
         const gridXMax = this.sharedStateByAncestorId[this.parentBoxId].gridXMax;
         this.dx = parentNode.clientWidth / gridXMax;
         if ( this.widthPerCent !== undefined ) {
