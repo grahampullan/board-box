@@ -86,8 +86,8 @@ class Board {
             .style("width",`${this.width}px`)
             .style("height",`${this.height}px`)
             .style("position","relative")
-            .style("overflow","hidden");
-            //.call(d3.zoom().on("zoom", boundZoomed));
+            .style("overflow","hidden")
+            .call(d3.zoom().on("zoom", boundZoomed));
         this.update();
     }
 
