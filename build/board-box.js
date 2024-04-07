@@ -4858,7 +4858,7 @@ class Box {
     }
 
     make() {
-        const boundDrag = this.drag.bind(this);
+        this.drag.bind(this);
         const boundLeftDrag = this.leftDrag.bind(this);
         const boundRightDrag = this.rightDrag.bind(this);
         const boundBottomDrag = this.bottomDrag.bind(this);
@@ -4880,12 +4880,12 @@ class Box {
             .style("left", `${this.x + this.margin}px`)
             .style("top", `${this.y + this.margin}px`)
             .style("position","absolute")
-            .style("overflow","hidden")
-            .call(drag()
-                .subject((e)=>({x: this.x, y: this.y }))
-                .on("start", boundDragStart )
-                .on("drag", boundDrag )
-                .on("end", boundDragEnd )); 
+            .style("overflow","hidden");
+            //.call(d3.drag()
+            //    .subject((e)=>({x: this.x, y: this.y }))
+            //    .on("start", boundDragStart )
+            //    .on("drag", boundDrag )
+            //    .on("end", boundDragEnd )); 
 
         div.append("div")
             .attr("class","board-box-left-drag")
