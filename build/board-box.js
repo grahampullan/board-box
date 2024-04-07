@@ -4739,6 +4739,7 @@ class Box {
     }
 
     drag(event) {
+        console.log("drag fired");
         this.x = event.x;
         this.y = event.y;
         this.fx = event.x;
@@ -4751,6 +4752,7 @@ class Box {
     }
 
     dragEnd(event) {
+        console.log("drag end fired");
         this.setParentInsertOrder({pt:{x:event.x, y:event.y}, id:this.id});
         this.requestParentAutoLayout();
         this.requestParentAutoNoOverlap(false, this.id);
@@ -4848,6 +4850,7 @@ class Box {
     }
 
     dragStart(event){
+        console.log("drag start fired");
         this.x0 = this.x;
         this.y0 = this.y;
         this.width0 = this.width;
