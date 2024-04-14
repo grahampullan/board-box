@@ -31,7 +31,7 @@ class Box {
         this.boxInsertOrder = [];
         this.componentMargin = options.componentMargin || {top:10, right:10, bottom:10, left:10};
         const requestAutoLayout = new Observable({flag:true, state:false});
-        requestAutoLayout.subscribe(this.setAutoLayout.bind(this));
+        requestAutoLayout.subscribe(this.setAutoLayoutAndUpdate.bind(this));
         const requestAutoNoOverlap = new Observable({flag:false, state:{}});
         requestAutoNoOverlap.subscribe(this.setAutoNoOverlap.bind(this));
         const checkInsertOrder = new Observable({state:{pt:{x:0,y:0},id:"box-0"}});
@@ -103,7 +103,6 @@ class Box {
     }
 
     setSize() {
-        console.log(this.id, this.parentBoxId, this.boxId);
         const parentNode = d3.select(`#${this.parentBoxId}`).node();
         const gridXMax = this.sharedStateByAncestorId[this.parentBoxId].gridXMax;
         this.dx = parentNode.clientWidth / gridXMax;
@@ -271,6 +270,10 @@ class Box {
                 counter++;
             }
         });
+    }
+
+    setAutoLayoutAndUpdate() {
+        this.setAutoLayout();
         this.updateDescendants("normal");
     }
 
