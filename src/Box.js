@@ -37,7 +37,9 @@ class Box {
         requestAutoNoOverlap.subscribe(this.setAutoNoOverlap.bind(this));
         const checkInsertOrder = new Observable({state:{pt:{x:0,y:0},id:"box-0"}});
         checkInsertOrder.subscribe(this.setInsertOrder.bind(this));
-        this.sharedState = {...this.sharedState, requestAutoLayout, requestAutoNoOverlap, checkInsertOrder};
+        const requestUpdateBoxes = new Observable({flag:false, state:{boxesToAdd:[], boxesToRemove:[]}});
+        requestUpdateBoxes.subscribe(this.updateBoxes.bind(this));
+        this.sharedState = {...this.sharedState, requestAutoLayout, requestAutoNoOverlap, checkInsertOrder, requestUpdateBoxes};
         this.component = options.component;
         if (this.autoNoOverlap) {
             this.createForceSimulation();
