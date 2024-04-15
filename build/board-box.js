@@ -4469,6 +4469,7 @@ class Box {
             box.component.remove();
         }
         this.boxes = this.boxes.filter( box => box.id !== id);
+        this.sharedState.boxes = this.sharedState.boxes.filter( box => box.boxId !== id);
         this.boxInsertOrder = this.boxInsertOrder.filter( boxId => boxId !== id);
         select(`#${id}`).remove();
     }
