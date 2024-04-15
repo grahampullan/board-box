@@ -4464,6 +4464,10 @@ class Box {
     }
 
     removeBox(id) {
+        const box = this.boxes.find( box => box.id == id );
+        if ( box.component ) {
+            box.component.remove();
+        }
         this.boxes = this.boxes.filter( box => box.id !== id);
         this.boxInsertOrder = this.boxInsertOrder.filter( boxId => boxId !== id);
         select(`#${id}`).remove();
