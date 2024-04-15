@@ -10,6 +10,8 @@
 
 <body>
 
+<button id="button">Remove box</button>
+
 <div id="target"></div>
 
 
@@ -54,6 +56,13 @@
 
         }
     }
+
+    //listener for button
+    document.getElementById("button").addEventListener("click", function() {
+        console.log("button clicked");
+        box1.removeBox("board-0-box-0-box-1");
+        box1.setAutoLayoutAndUpdate();
+    });
     
     function randomData() {
         const data = [];
@@ -86,10 +95,8 @@
         }
     }
 
-    //box1.addBox( new bb.Box({x:10,y:15, width:200, height:200, margin:4, component:new Scatter({dataId:'random'})  }));
-    //box1.addBox( new bb.Box({x:250,y:25, width:200, height:200, margin:4, component:new Scatter({dataId:'random'})  }));
-    //box1.addBox( new bb.Box({x:10,y:250, width:200, height:200, margin:4, component:new Scatter({dataId:'random'})  }));
     
+
     console.log(board);
     board.make();
 

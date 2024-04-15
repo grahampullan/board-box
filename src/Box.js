@@ -29,6 +29,7 @@ class Box {
         this.autoLayout = options.autoLayout || false;
         this.autoNoOverlap = options.autoNoOverlap || false;
         this.boxInsertOrder = [];
+        this.boxesSharedStateKeys = options.boxesSharedStateKeys || ["boxId"];
         this.componentMargin = options.componentMargin || {top:10, right:10, bottom:10, left:10};
         const requestAutoLayout = new Observable({flag:true, state:false});
         requestAutoLayout.subscribe(this.setAutoLayoutAndUpdate.bind(this));
@@ -71,10 +72,38 @@ class Box {
         }
         this.boxes.push(box);
         this.boxInsertOrder.push(box.id);
+        const boxesSharedStateKeys = this.boxesSharedStateKeys;
+        const boxesSharedState = this.boxes.map(box => {
+            const boxStateToShare = boxesSharedStateKeys.map( key => {
+                const boxStateByKey = {};
+                boxStateByKey[key] = box[key];
+                return boxStateByKey;
+            })
+            return boxStateToShare;
+        });
+        this.sharedState.boxes = boxesSharedState;
         if (this.autoNoOverlap) {
             this.createForceSimulation();
         }
         return id;
+    }
+
+    removeBox(id) {
+        this.boxes = this.boxes.filter( box => box.id !== id);
+        this.boxInsertOrder = this.boxInsertOrder.filter( boxId => boxId !== id);
+        d3.select(`#${id}`).remove();
+    }
+
+    updateBoxes(data) {
+        const boxesToAdd = data.boxesToAdd;
+        const boxesToRemove = data.boxesToRemove;
+        boxesToAdd.forEach( box => {
+            this.addBox(box);
+        });
+        boxesToRemove.forEach( boxId => {
+            this.removeBox(boxId);
+        });
+        this.setAutoLayoutAndUpdate();
     }
 
     get getNewBoxId() {
