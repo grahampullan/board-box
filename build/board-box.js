@@ -4448,7 +4448,11 @@ class Box {
         const boxesSharedState = this.boxes.map(box => {
             const boxStateToShare = {};
             boxesSharedStateKeys.forEach( key => {
-                boxStateToShare[key] = box[key];
+                if ( component !== undefined) {
+                    boxStateToShare[key] = box.component[key];
+                } else {
+                    boxStateToShare[key] = box[key];
+                }
             });
             return boxStateToShare;
         });
