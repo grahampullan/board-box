@@ -100,6 +100,7 @@ class Box {
         const boxesToRemove = data.boxesToRemove;
         boxesToAdd.forEach( box => {
             this.addBox(box);
+            box.make();
         });
         boxesToRemove.forEach( boxId => {
             this.removeBox(boxId);
