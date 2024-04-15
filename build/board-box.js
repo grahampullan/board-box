@@ -4468,12 +4468,15 @@ class Box {
     updateBoxes(data) {
         const boxesToAdd = data.boxesToAdd;
         const boxesToRemove = data.boxesToRemove;
+        console.log(data);
         boxesToAdd.forEach( box => {
             this.addBox(box);
-            box.make();
         });
         boxesToRemove.forEach( boxId => {
             this.removeBox(boxId);
+        });
+        boxesToAdd.forEach( box => {
+            box.make();
         });
         this.setAutoLayoutAndUpdate();
     }
