@@ -76,11 +76,10 @@ class Box {
         this.boxInsertOrder.push(box.id);
         const boxesSharedStateKeys = this.boxesSharedStateKeys;
         const boxesSharedState = this.boxes.map(box => {
-            const boxStateToShare = boxesSharedStateKeys.map( key => {
-                const boxStateByKey = {};
-                boxStateByKey[key] = box[key];
-                return boxStateByKey;
-            })
+            const boxStateToShare = {};
+            boxesSharedStateKeys.forEach( key => {
+                boxStateToShare[key] = box[key];
+            });
             return boxStateToShare;
         });
         this.sharedState.boxes = boxesSharedState;
