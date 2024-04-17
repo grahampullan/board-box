@@ -4572,7 +4572,7 @@ class Box {
     }
 
     raiseDiv() {
-        select(`#${this.id}`).raise();
+        //d3.select(`#${this.id}`).raise();
     }
 
     makeComponentDiv() {
