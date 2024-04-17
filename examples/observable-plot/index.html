@@ -57,12 +57,7 @@
         }
     }
 
-    //listener for button
-    document.getElementById("button").addEventListener("click", function() {
-        console.log("button clicked");
-        box1.removeBox("board-0-box-0-box-1");
-        box1.setAutoLayoutAndUpdate();
-    });
+   
     
     function randomData() {
         const data = [];
@@ -99,6 +94,16 @@
 
     console.log(board);
     board.make();
+
+     //listener for button
+     document.getElementById("button").addEventListener("click", function() {
+        console.log("button clicked");
+        //box1.removeBox("board-0-box-0-box-1");
+        //box1.setAutoLayoutAndUpdate();
+        const newBox = new bb.Box({x:100,y:100, width:800, height:500,autoLayout:true});
+    
+        board.sharedState.requestUpdateBoxes.state={boxesToAdd:[newBox]};
+    });
 
 </script>
 

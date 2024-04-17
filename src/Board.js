@@ -1,5 +1,6 @@
 import * as d3 from './d3-re-export.js'
 import {boxMakeForD3Each, boxUpdateForD3Each} from './Box.js';
+import { Observable } from './Observable.js';
 
 
 class Board {
@@ -19,6 +20,9 @@ class Board {
         this.heightPerCent = options.heightPerCent;
         this.widthPerCent = options.widthPerCent;
         this.sharedState.gridXMax = options.gridXMax || 12;
+        const requestUpdateBoxes = new Observable({flag:false, state:{boxesToAdd:[], boxesToRemove:[]}});
+        requestUpdateBoxes.subscribe(this.updateBoxes.bind(this));
+        this.sharedState.requestUpdateBoxes = requestUpdateBoxes;
     }
 
     get getAllBoxes() {
@@ -126,6 +130,23 @@ class Board {
         const boxes = boardDiv.selectAll(".board-box")
             .data(this.getAllBoxes, k => k.id);
         boxes.each(boxUpdateForD3Each);
+    }
+
+    updateBoxes(data) {
+        const boxesToAdd = data.boxesToAdd;
+        //const boxesToRemove = data.boxesToRemove;
+        console.log(data);
+        boxesToAdd.forEach( box => {
+            this.addBox(box);
+        });
+        //boxesToRemove.forEach( boxId => {
+        //    this.removeBox(boxId);
+        //});
+        boxesToAdd.forEach( box => {
+            box.make();
+        });
+        //this.setAutoLayoutAndUpdate();
+        this.update();
     }
 
 }
