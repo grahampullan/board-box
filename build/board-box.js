@@ -5142,6 +5142,7 @@ class Board {
         box.boxId = id;
         box.parentId = this.id;
         box.parentBoxId = this.id;
+        box.boardId = this.id;
         box.untransformed = {x:box.x, y:box.y, width:box.width, height:box.height};
         box.sharedStateByAncestorId = {...this.sharedStateByAncestorId};
         box.sharedStateByAncestorId[this.id] = this.sharedState;
