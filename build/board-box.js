@@ -4477,7 +4477,6 @@ class Box {
     updateBoxes(data) {
         const boxesToAdd = data.boxesToAdd;
         const boxesToRemove = data.boxesToRemove;
-        console.log(data);
         boxesToAdd.forEach( box => {
             this.addBox(box);
         });
@@ -4768,23 +4767,16 @@ class Box {
         let found = false;
         let boxInsertOrderNew;
         this.boxes.forEach( box => {
-            console.log(box.id, id);
-            console.log(pt);
             let xmin = box.x + 1;
             let xmax = box.x + box.width -2;
             let ymin = box.y + 1;
             let ymax = box.y + box.height -2;
-            console.log({xmin, xmax, ymin, ymax});
             if ( pt.x > xmin && pt.x <= xmax && pt.y >= ymin && pt.y <= ymax && id !== box.id ) {
                 found = true;
-                console.log("in insert order, box found");
-                console.log(box.id, id);
-                console.log(boxInsertOrder);
                 let insertPointId = box.id;
                 boxInsertOrderNew = boxInsertOrder.filter( boxId => boxId !== id);
                 let insertIndex = boxInsertOrderNew.indexOf(insertPointId);
                 boxInsertOrderNew.splice(insertIndex,0,id);
-                console.log(boxInsertOrderNew);
             }
         });
         if ( found ) {
@@ -4805,8 +4797,6 @@ class Box {
     }
 
     dragEnd(event) {
-        console.log("drag end");
-        console.log(event);
         this.setParentInsertOrder({pt:{x:event.x, y:event.y}, id:this.id});
         this.requestParentAutoLayout();
         this.requestParentAutoNoOverlap(false, this.id);
