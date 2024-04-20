@@ -393,8 +393,6 @@ class Box {
 
     setInsertOrder(data) {
         const pt = data.pt;
-        const xPtRel = pt.x - this.x;
-        const yPtRel = pt.y - this.y;
         const id = data.id;
         let boxInsertOrder = this.boxInsertOrder;
         let found = false;
@@ -402,13 +400,12 @@ class Box {
         this.boxes.forEach( box => {
             console.log(box.id, id);
             console.log(pt);
-            console.log(xPtRel, yPtRel);
-            let xmin = box.x;
-            let xmax = box.x + box.width;
-            let ymin = box.y;
-            let ymax = box.y + box.height;
+            let xmin = box.x + 1;
+            let xmax = box.x + box.width -2;
+            let ymin = box.y + 1
+            let ymax = box.y + box.height -2;
             console.log({xmin, xmax, ymin, ymax});
-            if ( xPtRel >= xmin && xPtRel <= xmax && yPtRel >= ymin && yPtRel <= ymax && id !== box.id ) {
+            if ( pt.x > xmin && pt.x <= xmax && pt.y >= ymin && pt.y <= ymax && id !== box.id ) {
                 found = true;
                 console.log("in insert order, box found");
                 console.log(box.id, id);
@@ -438,6 +435,8 @@ class Box {
     }
 
     dragEnd(event) {
+        console.log("drag end");
+        console.log(event);
         this.setParentInsertOrder({pt:{x:event.x, y:event.y}, id:this.id});
         this.requestParentAutoLayout();
         this.requestParentAutoNoOverlap(false, this.id);
