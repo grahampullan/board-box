@@ -4774,10 +4774,14 @@ class Box {
             let ymax = box.y + box.height;
             if ( pt.x >= xmin && pt.x <= xmax && pt.y >= ymin && pt.y <= ymax && id !== box.id ) {
                 found = true;
+                console.log("in insert order, box found");
+                console.log(box.id, id);
+                console.log(boxInsertOrder);
                 let insertPointId = box.id;
                 boxInsertOrderNew = boxInsertOrder.filter( boxId => boxId !== id);
                 let insertIndex = boxInsertOrderNew.indexOf(insertPointId);
                 boxInsertOrderNew.splice(insertIndex,0,id);
+                console.log(boxInsertOrderNew);
             }
         });
         if ( found ) {
