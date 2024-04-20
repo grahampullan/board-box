@@ -393,6 +393,8 @@ class Box {
 
     setInsertOrder(data) {
         const pt = data.pt;
+        const xPtRel = pt.x - this.x;
+        const yPtRel = pt.y - this.y;
         const id = data.id;
         let boxInsertOrder = this.boxInsertOrder;
         let found = false;
@@ -402,7 +404,7 @@ class Box {
             let xmax = box.x + box.width;
             let ymin = box.y;
             let ymax = box.y + box.height;
-            if ( pt.x >= xmin && pt.x <= xmax && pt.y >= ymin && pt.y <= ymax && id !== box.id ) {
+            if ( xPtRel >= xmin && xPtRel <= xmax && yPtRel >= ymin && yPtRel <= ymax && id !== box.id ) {
                 found = true;
                 console.log("in insert order, box found");
                 console.log(box.id, id);
