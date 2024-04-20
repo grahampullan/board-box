@@ -400,10 +400,14 @@ class Box {
         let found = false;
         let boxInsertOrderNew;
         this.boxes.forEach( box => {
+            console.log(box.id, id);
+            console.log(pt);
+            console.log(xPtRel, yPtRel);
             let xmin = box.x;
             let xmax = box.x + box.width;
             let ymin = box.y;
             let ymax = box.y + box.height;
+            console.log({xmin, xmax, ymin, ymax});
             if ( xPtRel >= xmin && xPtRel <= xmax && yPtRel >= ymin && yPtRel <= ymax && id !== box.id ) {
                 found = true;
                 console.log("in insert order, box found");
