@@ -12,6 +12,7 @@ class Board {
         this.ancestorIds = [];
         this.sharedState.offset = {x:0, y:0};
         this.sharedState.transform = {x:0, y:0, k:1};
+        this.sharedState.preventZoom = false;
         this.className = options.className || "";
         this.boxes = options.boxes || [];
         this.maxBox = 0;
@@ -106,6 +107,9 @@ class Board {
     }
 
     zoomed(event, d) {
+        if (this.sharedState.preventZoom) {
+            return;
+        }
         const t = event.transform;
         this.sharedState.transform = {x:t.x, y:t.y, k:t.k};
         this.boxes.forEach( box => {

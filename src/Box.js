@@ -25,7 +25,6 @@ class Box {
         this.gridY = options.gridY;
         this.gridHeight = options.gridHeight;
         this.sharedState.gridXMax = options.gridXMax || 12;
-        this.preventDrag = options.preventDrag || false;
         this.allowChildrenResizeOnBoardZoom = options.allowChildrenResizeOnBoardZoom || true;
         this.autoLayout = options.autoLayout || false;
         this.autoNoOverlap = options.autoNoOverlap || false;
@@ -417,9 +416,6 @@ class Box {
     }
 
     drag(event) {
-        if (this.preventDrag) {
-            return;
-        }
         this.x = event.x;
         this.y = event.y;
         this.fx = event.x;
@@ -432,19 +428,12 @@ class Box {
     }
 
     dragEnd(event) {
-        if (this.preventDrag) {
-            this.preventDrag = false;
-            return;
-        }
         this.setParentInsertOrder({pt:{x:event.x, y:event.y}, id:this.id});
         this.requestParentAutoLayout();
         this.requestParentAutoNoOverlap(false, this.id);
     }
 
     leftDrag(event) {
-        if (this.preventDrag) {
-            return;
-        }
         this.x = event.x;
         let dx = this.x - this.x0;
         this.width = this.width0 - dx;
@@ -458,9 +447,6 @@ class Box {
     }
 
     rightDrag(event) {
-        if (this.preventDrag) {
-            return;
-        }
         this.width = event.x;
         this.setQuantise();
         this.raiseDiv();
@@ -472,9 +458,6 @@ class Box {
     }
 
     bottomDrag(event) {
-        if (this.preventDrag) {
-            return;
-        }
         this.height = event.y;
         this.setQuantise();
         this.raiseDiv();
@@ -486,9 +469,6 @@ class Box {
     }
 
     bottomLeftDrag(event) {
-        if (this.preventDrag) {
-            return;
-        }
         this.x = event.x;
         let dx = this.x - this.x0;
         this.width = this.width0 - dx;
@@ -503,9 +483,6 @@ class Box {
     }
 
     bottomRightDrag(event) {
-        if (this.preventDrag) {
-            return;
-        }
         this.width = event.x;
         this.height = event.y;
         this.setQuantise();
@@ -518,9 +495,6 @@ class Box {
     }
 
     topLeftDrag(event) {
-        if (this.preventDrag) {
-            return;
-        }
         this.x = event.x;
         this.y = event.y;
         let dx = this.x - this.x0;
@@ -537,9 +511,6 @@ class Box {
     }
 
     topRightDrag(event) {
-        if (this.preventDrag) {
-            return;
-        }
         this.y = event.y;
         this.width = event.x;
         let dy = this.y - this.y0;
@@ -554,9 +525,6 @@ class Box {
     }
 
     dragStart(event){
-        if (this.preventDrag) {
-            return;
-        }
         this.x0 = this.x;
         this.y0 = this.y;
         this.width0 = this.width;
