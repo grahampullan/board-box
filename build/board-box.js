@@ -4584,7 +4584,8 @@ class Box {
             .style("left", `${this.componentMargin.left}px`)
             .style("top", `${this.componentMargin.top}px`)
             .style("position","absolute")
-            .style("overflow","hidden");
+            .style("overflow","hidden")
+            .style("pointer-events","none");
     }
 
     updateComponentDiv() {
