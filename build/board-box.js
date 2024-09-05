@@ -5156,7 +5156,7 @@ class Board {
             component.ancestorIds = box.ancestorIds;
             component.id = box.componentId;
             component.boxId = box.id;
-            component.boardId = this.boardId;
+            component.boardId = this.id;
         }
         this.boxes.push(box);
         return id;
