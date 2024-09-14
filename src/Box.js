@@ -17,6 +17,8 @@ class Box {
         this.height = options.height || 300;
         this.heightPerCent = options.heightPerCent;
         this.widthPerCent = options.widthPerCent;
+        this.xPerCent = options.xPerCent;
+        this.yPerCent = options.yPerCent;
         this.quantiseX = options.quantiseX || false;
         this.quantiseY = options.quantiseY || false;
         this.margin = options.margin || 0;
@@ -24,6 +26,7 @@ class Box {
         this.gridWidth = options.gridWidth;
         this.gridY = options.gridY;
         this.gridHeight = options.gridHeight;
+        this.fixed = options.fixed || false;
         this.sharedState.gridXMax = options.gridXMax || 12;
         this.allowChildrenResizeOnBoardZoom = options.allowChildrenResizeOnBoardZoom || true;
         this.autoLayout = options.autoLayout || false;
@@ -161,6 +164,12 @@ class Box {
         if ( this.quantiseY ) {
             this.y = this.gridY * this.dx;
             this.height = this.gridHeight * this.dx;
+        }
+        if ( this.xPerCent !== undefined ) {
+            this.x = this.xPerCent/100 * parentNode.clientWidth;
+        }
+        if ( this.yPerCent !== undefined ) {
+            this.y = this.yPerCent/100 * parentNode.clientHeight;
         }
     }
 
@@ -557,13 +566,16 @@ class Box {
             .style("left", `${this.x + this.margin}px`)
             .style("top", `${this.y + this.margin}px`)
             .style("position","absolute")
-            .style("overflow","hidden")
-            .call(d3.drag()
+            .style("overflow","hidden");
+        if (!this.fixed) {
+            div.call(d3.drag()
                 .subject((e)=>({x: this.x, y: this.y }))
                 .on("start", boundDragStart )
                 .on("drag", boundDrag )
-                .on("end", boundDragEnd )); 
+                .on("end", boundDragEnd ));
+        }
 
+        if (!this.fixed) {
         div.append("div")
             .attr("class","board-box-left-drag")
             .style("left","-5px")
@@ -578,7 +590,9 @@ class Box {
                 .on("drag", boundLeftDrag )
                 //.on("end", boundRequestParentAutoLayout));
                 .on("end", boundDragEnd )); 
+        }
 
+        if (!this.fixed) {
         div.append("div")
             .attr("class","board-box-right-drag")
             .style("right", "-5px")
@@ -592,7 +606,9 @@ class Box {
                 .on("drag", boundRightDrag)
                 //.on("end", boundRequestParentAutoLayout));
                 .on("end", boundDragEnd )); 
+        }
 
+        if (!this.fixed) {
         div.append("div")
             .attr("class","board-box-bottom-drag")
             .style("left", "10px")
@@ -606,7 +622,9 @@ class Box {
                 .on("drag", boundBottomDrag)
                 //.on("end", boundRequestParentAutoLayout));
                 .on("end", boundDragEnd )); 
+        }
 
+        if (!this.fixed) {
         div.append("div")
             .attr("class","board-box-bottom-left-drag")
             .style("left", "-5px")
@@ -621,7 +639,9 @@ class Box {
                 .on("drag", boundBottomLeftDrag)
                 //.on("end", boundRequestParentAutoLayout));
                 .on("end", boundDragEnd )); 
+        }
 
+        if (!this.fixed) {
         div.append("div")
             .attr("class","board-box-bottom-right-drag")
             .style("right", "-5px")
@@ -635,7 +655,9 @@ class Box {
                 .on("drag", boundBottomRightDrag)
                 //.on("end", boundRequestParentAutoLayout));
                 .on("end", boundDragEnd )); 
+        }
 
+        if (!this.fixed) {
         div.append("div")
             .attr("class","board-box-top-left-drag")
             .style("left", "-5px")
@@ -650,7 +672,9 @@ class Box {
                 .on("drag", boundTopLeftDrag)
                 //.on("end", boundRequestParentAutoLayout));
                 .on("end", boundDragEnd )); 
+        }
 
+        if (!this.fixed) {
         div.append("div")
             .attr("class","board-box-top-right-drag")
             .style("right", "-5px")
@@ -665,6 +689,7 @@ class Box {
                 .on("drag", boundTopRightDrag)
                 //.on("end", boundRequestParentAutoLayout));
                 .on("end", boundDragEnd )); 
+        }
 
         if (this.component !== undefined) {
             this.makeComponentDiv();

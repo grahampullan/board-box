@@ -20,6 +20,7 @@ class Board {
         this.height = options.height || 300;
         this.heightPerCent = options.heightPerCent;
         this.widthPerCent = options.widthPerCent;
+        this.fixed = options.fixed || false;
         this.sharedState.gridXMax = options.gridXMax || 12;
         const requestUpdateBoxes = new Observable({flag:false, state:{boxesToAdd:[], boxesToRemove:[]}});
         requestUpdateBoxes.subscribe(this.updateBoxes.bind(this));
@@ -92,8 +93,10 @@ class Board {
             .style("width",`${this.width}px`)
             .style("height",`${this.height}px`)
             .style("position","relative")
-            .style("overflow","hidden")
-            .call(d3.zoom().on("zoom", boundZoomed));
+            .style("overflow","hidden");
+        if (!this.fixed) {
+            d3.select('#${this.id}').call(d3.zoom().on("zoom", boundZoomed));
+        }
         this.update();
     }
 
