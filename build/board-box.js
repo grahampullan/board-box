@@ -5200,7 +5200,7 @@ class Board {
             .style("position","relative")
             .style("overflow","hidden");
         if (!this.fixed) {
-            select('#${this.id}').call(zoom().on("zoom", boundZoomed));
+            select(`#${this.id}`).call(zoom().on("zoom", boundZoomed));
         }
         this.update();
     }

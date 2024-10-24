@@ -95,7 +95,7 @@ class Board {
             .style("position","relative")
             .style("overflow","hidden");
         if (!this.fixed) {
-            d3.select('#${this.id}').call(d3.zoom().on("zoom", boundZoomed));
+            d3.select(`#${this.id}`).call(d3.zoom().on("zoom", boundZoomed));
         }
         this.update();
     }
