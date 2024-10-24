@@ -4538,9 +4538,7 @@ class Box {
         if ( this.xPerCent !== undefined ) {
             this.x = this.xPerCent/100 * parentNode.clientWidth;
         }
-        if ( this.yPerCent !== undefined ) {
-            this.y = this.yPerCent/100 * parentNode.clientHeight;
-        }
+        
     }
 
     setQuantise() {
@@ -4695,6 +4693,9 @@ class Box {
     }
 
     setAutoLayoutAndUpdate() {
+        if ( !this.autoLayout ) {
+            return;
+        }
         this.setAutoLayout();
         this.updateDescendants("normal");
     }
