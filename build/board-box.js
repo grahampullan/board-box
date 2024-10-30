@@ -4218,6 +4218,15 @@ class Observable{
 
     }
 
+    subscribeWithData(observerAndData) {
+
+        let id = this.observerIdMax;
+        this.observers.push({observer:observerAndData.observer, data:observerAndData.data ,id});
+        this.observerIdMax++;
+        return id
+
+    }
+
     isSubscribed(observer) {
 
         return this.observers.map( d => d.observer).includes(observer);
