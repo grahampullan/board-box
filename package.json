@@ -1,6 +1,6 @@
 {
   "name": "board-box",
-  "version": "0.2.47",
+  "version": "0.2.48",
   "description": "Lightweight infinite canvas with heirarchical containers for web apps",
   "main": "build/board-box.min.js",
   "module": "build/board-box.js",
