@@ -706,6 +706,7 @@ class Box {
             this.component.make();
         }
         this.update("normal");
+        this.customOnUpdateEnd?.();
     }
 
     update(type="normal") {
