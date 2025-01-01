@@ -434,6 +434,7 @@ class Box {
         this.raiseDiv();
         this.update("move");
         this.updateDescendants("move");
+        this.customOnUpdateEnd?.();
         this.requestParentAutoNoOverlap(false, this.id);
     }
 
@@ -451,6 +452,7 @@ class Box {
         this.raiseDiv();
         this.update("normal");
         this.updateDescendants("normal");
+        this.customOnUpdateEnd?.();
         this.fx = this.x;
         this.fy = this.y;
         this.requestParentAutoNoOverlap(true, this.id);
@@ -462,6 +464,7 @@ class Box {
         this.raiseDiv();
         this.update("normal");
         this.updateDescendants("normal");
+        this.customOnUpdateEnd?.();
         this.fx = this.x;
         this.fy = this.y;
         this.requestParentAutoNoOverlap(true, this.id);
@@ -473,6 +476,7 @@ class Box {
         this.raiseDiv();
         this.update("normal");
         this.updateDescendants("normal");
+        this.customOnUpdateEnd?.();
         this.fx = this.x;
         this.fy = this.y;
         this.requestParentAutoNoOverlap(true,this.id);
@@ -487,6 +491,7 @@ class Box {
         this.raiseDiv();
         this.update("normal");
         this.updateDescendants("normal");
+        this.customOnUpdateEnd?.();
         this.fx = this.x;
         this.fy = this.y;
         this.requestParentAutoNoOverlap(true, this.id);
@@ -499,6 +504,7 @@ class Box {
         this.raiseDiv();
         this.update("normal");
         this.updateDescendants("normal");
+        this.customOnUpdateEnd?.();
         this.fx = this.x;
         this.fy = this.y;
         this.requestParentAutoNoOverlap(true, this.id);
@@ -515,6 +521,7 @@ class Box {
         this.raiseDiv();
         this.update("normal");
         this.updateDescendants("normal");
+        this.customOnUpdateEnd?.();
         this.fx = this.x;
         this.fy = this.y;
         this.requestParentAutoNoOverlap(true, this.id);
@@ -529,6 +536,7 @@ class Box {
         this.raiseDiv();
         this.update("normal");
         this.updateDescendants("normal");
+        this.customOnUpdateEnd?.();
         this.fx = this.x;
         this.fy = this.y;
         this.requestParentAutoNoOverlap(true, this.id);
