@@ -120,6 +120,7 @@ class Box {
             box.make();
         });
         this.setAutoLayoutAndUpdate();
+        this.customOnUpdateEnd?.();
     }
 
     get getNewBoxId() {

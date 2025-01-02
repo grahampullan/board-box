@@ -4499,6 +4499,7 @@ class Box {
             box.make();
         });
         this.setAutoLayoutAndUpdate();
+        this.customOnUpdateEnd?.();
     }
 
     get getNewBoxId() {
@@ -5261,6 +5262,7 @@ class Board {
         const boxes = boardDiv.selectAll(".board-box")
             .data(this.getAllBoxes, k => k.id);
         boxes.each(boxUpdateForD3Each);
+        this.customOnUpdateEnd?.();
     }
 
     updateBoxes(data) {
@@ -5278,6 +5280,7 @@ class Board {
         });
         //this.setAutoLayoutAndUpdate();
         this.update();
+        this.customOnUpdateEnd?.();
     }
 
 }
