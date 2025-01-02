@@ -5086,7 +5086,6 @@ class Box {
             this.component.make();
         }
         this.update("normal");
-        this.customOnUpdateEnd?.();
     }
 
     update(type="normal") {
@@ -5231,6 +5230,7 @@ class Board {
         boxes.enter().each(boxMakeForD3Each);
         boxes.exit().remove();
         boxes.each(boxUpdateForD3Each);
+        this.customOnUpdateEnd?.();
     }
 
     zoomed(event, d) {
