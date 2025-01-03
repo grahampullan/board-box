@@ -4495,10 +4495,13 @@ class Box {
         boxesToRemove.forEach( boxId => {
             this.removeBox(boxId);
         });
+        if (this.autoLayout) {
+            this.setAutoLayout();
+        }
         boxesToAdd.forEach( box => {
             box.make();
         });
-        this.setAutoLayoutAndUpdate();
+        //this.setAutoLayoutAndUpdate();
         this.customOnUpdateEnd?.();
     }
 
@@ -4822,6 +4825,7 @@ class Box {
         this.setParentInsertOrder({pt:{x:event.x, y:event.y}, id:this.id});
         this.requestParentAutoLayout();
         this.requestParentAutoNoOverlap(false, this.id);
+        this.customOnUpdateEnd?.();
     }
 
     leftDrag(event) {
