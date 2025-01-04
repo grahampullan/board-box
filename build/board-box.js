@@ -4501,7 +4501,8 @@ class Box {
         boxesToAdd.forEach( box => {
             box.make();
         });
-        //this.setAutoLayoutAndUpdate();
+        this.setAutoLayoutAndUpdate();
+
         this.customOnUpdateEnd?.();
     }
 
