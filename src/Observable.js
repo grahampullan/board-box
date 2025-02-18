@@ -1,10 +1,13 @@
 class Observable{
 
     constructor(options){
-        if (!options) { options={} };
+        if (!options) { options = {} };
         this.flag = options.flag || false;
         this._state = options.state;
-        this.observers=[];
+        if ( options.name ) {
+            this.name = options.name;
+        }
+        this.observers = [];
         this.observerIdMax = 0;
     }
 
