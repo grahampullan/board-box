@@ -55,7 +55,11 @@ class Board {
             this.width = this.widthPerCent/100 * parentNode.clientWidth;
         }
         if ( this.heightPerCent !== undefined ) {
-            this.height = this.heightPerCent/100 * parentNode.clientHeight;
+            let parentHeight = parentNode.clientHeight;
+            if (parentHeight === 0) {
+                parentHeight = document.documentElement.clientHeight;
+            }
+            this.height = this.heightPerCent/100 * parentHeight;
         }
     }
 
@@ -181,6 +185,19 @@ class Board {
             boxes: boxesJson
         }
         return json;
+    }
+
+    downloadJson() {
+        const json = this.toJson();
+        const jsonString = JSON.stringify(json, null, 2);
+        const blob = new Blob([jsonString], {type: 'application/json'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'board.json';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
     }
 
 }
