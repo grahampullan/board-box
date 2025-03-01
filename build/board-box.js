@@ -5121,6 +5121,24 @@ class Box {
         });   
     }
 
+    toJson() {
+        const position = {
+            x: this.x, 
+            y: this.y, 
+            width: this.width, 
+            height: this.height, 
+            widthPerCent: this.widthPerCent,
+            heightPerCent: this.heightPerCent };
+        const options = {
+            fixed: this.fixed,
+            autoLayout: this.autoLayout,
+            autoNoOverlap: this.autoNoOverlap
+        };
+        const component = this.component.toJson();
+        const json = {position, options, component};
+        return json;
+    }
+
 }
 
 const boxMakeForD3Each = function( d, i ) {
