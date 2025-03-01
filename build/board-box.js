@@ -5309,6 +5309,29 @@ class Board {
         this.customOnUpdateEnd?.();
     }
 
+    toJson() {
+        const getBoxesJson = (boxes) => {
+            const boxesJson = boxes.map( (box,i) => {
+                const boxJson = box.toJson();
+                if (box.boxes.length > 0) {
+                    boxJson.boxes = getBoxesJson(box.boxes);
+                } else {
+                    boxJson.boxes = [];
+                }
+                return boxJson;
+            });
+            return boxesJson;
+        };
+
+        const position = {widthPerCent:this.widthPerCent, width: this.width, height: this.height};
+        const boxesJson = getBoxesJson(this.boxes);
+        const json = {
+            position,
+            boxes: boxesJson
+        };
+        return json;
+    }
+
 }
 
 class Context {
