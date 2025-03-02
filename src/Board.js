@@ -178,7 +178,7 @@ class Board {
             return boxesJson;
         }
 
-        const position = {widthPerCent:this.widthPerCent, width: this.width, height: this.height};
+        const position = {widthPerCent:this.widthPerCent, heightPerCent:this.heightPerCent, width: this.width, height: this.height};
         const boxesJson = getBoxesJson(this.boxes);
         const json = {
             position,

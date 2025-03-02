@@ -64,7 +64,7 @@ class Box {
         box.untransformed = {x:box.x, y:box.y, width:box.width, height:box.height};
         box.sharedStateByAncestorId = {...this.sharedStateByAncestorId};
         box.sharedStateByAncestorId[this.id] = this.sharedState;
-        box.ancestorIds = [...this.ancestorIds];
+        box.ancestorIds = [...(this.ancestorIds || [])];
         box.ancestorIds.push(this.boxId);
         const component = box.component;
         if (component !== undefined) {

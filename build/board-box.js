@@ -4446,7 +4446,7 @@ class Box {
         box.untransformed = {x:box.x, y:box.y, width:box.width, height:box.height};
         box.sharedStateByAncestorId = {...this.sharedStateByAncestorId};
         box.sharedStateByAncestorId[this.id] = this.sharedState;
-        box.ancestorIds = [...this.ancestorIds];
+        box.ancestorIds = [...(this.ancestorIds || [])];
         box.ancestorIds.push(this.boxId);
         const component = box.component;
         if (component !== undefined) {
@@ -5327,7 +5327,7 @@ class Board {
             return boxesJson;
         };
 
-        const position = {widthPerCent:this.widthPerCent, width: this.width, height: this.height};
+        const position = {widthPerCent:this.widthPerCent, heightPerCent:this.heightPerCent, width: this.width, height: this.height};
         const boxesJson = getBoxesJson(this.boxes);
         const json = {
             position,
